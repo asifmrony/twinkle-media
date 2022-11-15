@@ -46,3 +46,8 @@ code {
   display: block;
   bottom: 0;
 }
+.card-wrapper {
+  background: #fff;
+  border-radius: 0.5rem;
+  border: 1px solid #f3f4f6;
+}
