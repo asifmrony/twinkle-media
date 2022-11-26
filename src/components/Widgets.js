@@ -5,7 +5,7 @@ import { BsInfoSquareFill } from 'react-icons/bs'
 const Widgets = () => {
     const feedPeople = (image, name, bio) => {
         return (
-            <div className="px-2 flex items-start space-x-2 py-2">
+            <div className="px-3 flex items-start space-x-2 py-2">
                 <div className='w-14 h-14 bg-white rounded-full p-[2px]'>
                     <img src={image} alt="" className='w-full h-full rounded-full' />
                 </div>
@@ -23,8 +23,8 @@ const Widgets = () => {
 
     return (
         <div className='col-span-4'>
-            <div className="widgets card-wrapper py-2">
-                <div className='flex items-center justify-between px-2 pb-1'>
+            <div className="widgets card-wrapper py-2 pb-4">
+                <div className='flex items-center justify-between px-3 pb-2'>
                     <h1 className='font-bold text-lg'>Add to your feed</h1>
                     <BsInfoSquareFill className='text-neutral-500' />
                 </div>
