@@ -1,10 +1,14 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux';
 import { auth } from './Firebase'
+import { login } from '../features/userSlice'
 
 function Login() {
     const [inRegister, setInRegister] = useState(false);
     const [userData, setUserData] = useState({})
+    const dispatch = useDispatch();
+
     //Register Handler
     const onRegister = (e) => {
         e.preventDefault();
@@ -19,12 +23,17 @@ function Login() {
         createUserWithEmailAndPassword(auth, userData.email, userData.password)
             .then((userInfo) => {
                 // Signed in 
-                const user = userInfo.user;
                 updateProfile(auth.currentUser, {
                     displayName: userData.fullName,
                     photoURL: userData.profilePic
                 })
-                console.log(user);
+                //Send user to redux store
+                dispatch(login({
+                    email: userInfo.user.email,
+                    uid: userInfo.user.uid,
+                    displayName: userData.fullName,
+                    photoURL: userData.profilePic
+                }))
             })
             .catch((error) => {
                 console.log(error); 
@@ -34,12 +43,17 @@ function Login() {
     const onSignIn = (e) => {
         e.preventDefault();
         signInWithEmailAndPassword(auth, userData.email, userData.password)
-        .then((userCredentials) => {
+        .then((userInfo) => {
             //Signed In
-            const user = userCredentials.user
+            //Send user to redux store
+            dispatch(login({
+                email: userInfo.user.email,
+                uid: userInfo.user.uid,
+                displayName: userInfo.user.displayName,
+                photoURL: userInfo.user.photoURL
+            }))
         })
     }
-    // console.log(userData);
 
     return (
         <section className="login">

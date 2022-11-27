@@ -7,9 +7,13 @@ import { RiMessage2Fill } from 'react-icons/ri';
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment } from 'react';
 import HeaderOptions from './HeaderOptions';
+import { logout } from '../features/userSlice';
+import { useDispatch } from 'react-redux';
+import { auth } from './Firebase';
 
 const Header = () => {
-    const [isMenuActive, setIsMenuActive] = useState('Home')
+    const [isMenuActive, setIsMenuActive] = useState('Home');
+    const dispatch = useDispatch();
 
     const navLinks = [
         {label: 'Home', icon: FaHome},
@@ -24,6 +28,12 @@ const Header = () => {
         {href:'/help', label: 'Help'},
         {href:'/language', label: 'Language'},
     ]
+
+    const logoutHandle = (e) => {
+        e.preventDefault();
+        dispatch(logout());
+        auth.signOut();
+    } 
 
     return (
         <>
@@ -128,6 +138,7 @@ const Header = () => {
                                                 <Menu.Item>
                                                     {({ active }) => (
                                                         <a href='#'
+                                                            onClick={logoutHandle}
                                                             className={`${active ? 'bg-violet-500 text-white' : 'text-gray-900'
                                                                 } group flex w-full items-center rounded-md px-2 py-1 text-sm`}
                                                         >
