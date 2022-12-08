@@ -1,17 +1,19 @@
 import { onAuthStateChanged } from 'firebase/auth';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Feed from './components/Feed';
-import { auth } from './components/Firebase';
-import Header from './components/Header';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { auth } from './Firebase';
+import Home from './components/Home';
 import Login from './components/Login';
-import Sidebar from './components/Sidebar';
-import Widgets from './components/Widgets';
 import { login, logout, selectUser } from './features/userSlice';
+import RequireAuth from './components/auth/RequireAuth';
+import Signup from './components/Signup';
 
 function App() {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
+
+  console.log(auth.currentUser);
 
   useEffect(() => {
     onAuthStateChanged(auth, (loggedInuser) => {
@@ -31,26 +33,24 @@ function App() {
   }, [])
 
   return (
-    <div className="App bg-[#F3F2EF] min-h-screen">
-      {!user ? <Login /> :
-        <>
-          {/* Header */}
-          <Header />
-
-          {/* Main Section */}
-          <main className='container'>
-            <section className='grid grid-cols-12 gap-x-4 mt-5'>
-              {/* sidebar */}
-              <Sidebar />
-              {/* Feed */}
-              <Feed />
-              {/* Widgets */}
-              <Widgets />
-            </section>
-          </main>
-        </>
-      }
-    </div>
+    <BrowserRouter>
+      <>
+        <div className="App bg-[#F3F2EF] min-h-screen">
+          <Routes>
+            <Route 
+              path='/' 
+              element={
+                <RequireAuth>
+                  <Home />
+                </RequireAuth>
+              } 
+            />
+            <Route path='/login' element={<Login />} />
+            <Route path='/signup' element={<Signup />} />
+          </Routes>
+        </div>
+      </>
+    </BrowserRouter>
   );
 }
 

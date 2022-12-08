@@ -7,9 +7,10 @@ import { RiMessage2Fill } from 'react-icons/ri';
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment } from 'react';
 import HeaderOptions from './HeaderOptions';
-import { logout } from '../features/userSlice';
+import { logout } from '../../features/userSlice';
 import { useDispatch } from 'react-redux';
-import { auth } from './Firebase';
+import { auth } from '../../Firebase';
+
 
 const Header = () => {
     const [isMenuActive, setIsMenuActive] = useState('Home');

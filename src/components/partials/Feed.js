@@ -4,7 +4,7 @@ import { HiPhoto, HiVideoCamera, HiOutlinePaperAirplane } from 'react-icons/hi2'
 import { AiOutlineLike } from 'react-icons/ai';
 import { FaRegCommentDots, FaUserCircle } from 'react-icons/fa';
 import { TbArrowAutofitDown } from 'react-icons/tb';
-import { db } from './Firebase';
+import { db } from '../../Firebase';
 import { addDoc, collection, deleteDoc, getDocs, updateDoc, doc, serverTimestamp, query, orderBy } from 'firebase/firestore/lite';
 
 const Feed = () => {
