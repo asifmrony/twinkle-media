@@ -4,6 +4,8 @@ import { useDispatch } from 'react-redux';
 import { auth } from '../Firebase'
 import { login } from '../features/userSlice'
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Login() {
     const [userData, setUserData] = useState({})
@@ -15,11 +17,11 @@ function Login() {
     //Sign In handler
     const onSignIn = (e) => {
         e.preventDefault();
-        if(!userData?.email) {
+        if (!userData?.email) {
             setIsEmailEmpty(true);
             return;
         }
-        if(!userData?.password) {
+        if (!userData?.password) {
             setIsPasswordEmpty(true);
             return;
         }
@@ -33,11 +35,24 @@ function Login() {
                     displayName: userInfo.user.displayName,
                     photoURL: userInfo.user.photoURL
                 }))
-            }).catch(err => console.log(err));
+                toast.success('Login successful', {theme: 'colored'});
+                setTimeout(() => {navigate('/')}, 1000);
+               
+            }).catch(err => {
+                if(err.code == 'auth/user-not-found') {
+                    toast.error('User not found', {theme: 'colored'})
+                } else if (err.code == 'auth/wrong-password') {
+                    toast.error('Wrong Password', {theme: 'colored'})
+                }
+                else {
+                    toast.error(err.code, {theme: 'colored'})
+                }
+            });
     }
 
     return (
         <section className="login">
+            <ToastContainer />
             <div className="ml-28 py-6 mx-auto">
                 <img src="https://brand.linkedin.com/content/dam/me/business/en-us/amp/brand-site/v2/bg/LI-Logo.svg.original.svg" alt="" className='h-[2.2rem]' />
             </div>
@@ -55,9 +70,9 @@ function Login() {
                                     name='email'
                                     onChange={(e) => {
                                         setIsEmailEmpty(false);
-                                         setUserData({ ...userData, [e.target.name]: e.target.value })
-                                        }}
-                                    className={`border ${isEmailEmpty ? 'border-red-600' : 'border-slate-500'} w-full rounded-md py-1 px-2`} 
+                                        setUserData({ ...userData, [e.target.name]: e.target.value })
+                                    }}
+                                    className={`border ${isEmailEmpty ? 'border-red-600' : 'border-slate-500'} w-full rounded-md py-1 px-2`}
                                 />
                                 {isEmailEmpty && <p className='text-red-600 text-xs'>Email address is required</p>}
                             </label>
@@ -82,7 +97,7 @@ function Login() {
                             >Sign In</button>
                         </form>
                     </div>
-                        <p className='text-sm max-w-sm mx-auto text-center mt-4'>Not a Member? <span className='text-blue-600 font-semibold cursor-pointer' onClick={() => navigate('/signup')}>Register Now</span></p>
+                    <p className='text-sm max-w-sm mx-auto text-center mt-4'>Not a Member? <span className='text-blue-600 font-semibold cursor-pointer' onClick={() => navigate('/signup')}>Register Now</span></p>
                 </div>
             </div>
         </section>

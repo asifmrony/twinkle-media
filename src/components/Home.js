@@ -3,9 +3,7 @@ import Header from './partials/Header';
 import Feed from './partials/Feed';
 import Sidebar from './partials/Sidebar';
 import Widgets from './partials/Widgets';
-import { auth } from '../Firebase';
 
-const user = auth.currentUser;
 
 function Home() {
     return (

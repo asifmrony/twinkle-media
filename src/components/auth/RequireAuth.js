@@ -1,11 +1,12 @@
 import React from 'react'
+import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
+import { selectUser } from '../../features/userSlice';
 import { auth } from '../../Firebase'
 
-const user = auth.currentUser;
-console.log(user);
-
 function RequireAuth({ children }) {
+    const user = useSelector(selectUser);
+    console.log(user);
     if(!user) {
         return <Navigate to={'/login'} />
     }

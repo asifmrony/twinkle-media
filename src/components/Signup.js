@@ -4,22 +4,30 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom'
 import { login } from '../features/userSlice';
 import { auth } from '../Firebase';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Signup() {
     const navigate = useNavigate();
     const [userData, setUserData] = useState({})
+    const [isNameEmpty, setIsNameEmpty] = useState(false);
+    const [isEmailEmpty, setIsEmailEmpty] = useState(false);
+    const [isPasswordEmpty, setIsPasswordEmpty] = useState(false);
     const dispatch = useDispatch();
 
     //Register Handler
     const onRegister = (e) => {
         e.preventDefault();
-        if(!userData.fullName) {
-            alert('Please set a Full Name');
-        } if(!userData.email) {
-            alert('Please enter an email');
+        if (!userData.fullName) {
+            setIsNameEmpty(true);
+            return;
+        } if (!userData.email) {
+            setIsEmailEmpty(true);
+            return;
         }
-        if(!userData.password) {
-            alert('Please set your password');
+        if (!userData.password) {
+            setIsPasswordEmpty(true);
+            return;
         }
         createUserWithEmailAndPassword(auth, userData.email, userData.password)
             .then((userInfo) => {
@@ -35,14 +43,24 @@ function Signup() {
                     displayName: userData.fullName,
                     photoURL: userData.profilePic
                 }))
+                toast.success('Account Created', {theme: 'colored'});
+                setTimeout(() => {
+                    navigate('/');
+                }, 1000);
             })
             .catch((error) => {
-                console.log(error); 
+                console.log(error);
+                if (error.code == 'auth/email-already-in-use') {
+                    toast.error('Already an user with this email.', { theme: 'colored' })
+                } else if (error.code == 'auth/weak-password') {
+                    toast.error('The Password is too weak.', { theme: 'colored' })
+                }
             });
     }
 
     return (
         <section className="signup">
+            <ToastContainer />
             <div className="ml-28 py-6 mx-auto">
                 <img src="https://brand.linkedin.com/content/dam/me/business/en-us/amp/brand-site/v2/bg/LI-Logo.svg.original.svg" alt="" className='h-[2.2rem]' />
             </div>
@@ -50,7 +68,7 @@ function Signup() {
                 <div>
                     <h1 className='text-3xl mb-4'>Make the most of your professional life</h1>
                     <div className="bg-white rounded-md px-5 py-4 max-w-sm mx-auto">
-                        <form>
+                        <form onSubmit={onRegister}>
                             <>
                                 <label htmlFor="fullName" className='space-y-1 block mb-2'>
                                     <p className='text-gray-500 text-sm'>Full Name</p>
@@ -58,9 +76,13 @@ function Signup() {
                                         type="text"
                                         name='fullName'
                                         id='fullName'
-                                        className='border border-slate-500 w-full rounded-md p-1'
-                                        onChange={(e) => setUserData({ ...userData, [e.target.name]: e.target.value })}
+                                        className='border border-slate-500 w-full rounded-md py-1 px-2'
+                                        onChange={(e) => {
+                                            setUserData({ ...userData, [e.target.name]: e.target.value });
+                                            setIsNameEmpty(false);
+                                        }} 
                                     />
+                                    {isNameEmpty && <p className='text-red-600 text-xs'>Enter your Name</p>}
                                 </label>
                                 <label htmlFor="profilePic" className='space-y-1 block mb-2'>
                                     <p className='text-gray-500 text-sm'>Profile Pic URL (Optional)</p>
@@ -68,7 +90,7 @@ function Signup() {
                                         type="text"
                                         id='profilePic'
                                         name='profilePic'
-                                        className='border border-slate-500 w-full rounded-md p-1'
+                                        className='border border-slate-500 w-full rounded-md py-1 px-2'
                                         onChange={(e) => setUserData({ ...userData, [e.target.name]: e.target.value })}
                                     />
                                 </label>
@@ -78,8 +100,13 @@ function Signup() {
                                         type="email"
                                         id='email'
                                         name='email'
-                                        onChange={(e) => setUserData({ ...userData, [e.target.name]: e.target.value })}
-                                        className='border border-slate-500 w-full rounded-md p-1' />
+                                        onChange={(e) => {
+                                            setUserData({ ...userData, [e.target.name]: e.target.value });
+                                            setIsEmailEmpty(false)
+                                        }}
+                                        className={`border w-full rounded-md py-1 px-2 ${isEmailEmpty ? 'border-red-600': 'border-slate-500'}`} />
+                                    {isEmailEmpty && <p className='text-red-600 text-xs'>Enter you email</p>}
+                                    
                                 </label>
                                 <label htmlFor="pwd" className='space-y-1 block mb-3'>
                                     <p className='text-gray-500 text-sm'>Password</p>
@@ -87,14 +114,17 @@ function Signup() {
                                         type="text"
                                         id='pwd'
                                         name='password'
-                                        className='border border-slate-500 w-full rounded-md p-1'
-                                        onChange={(e) => setUserData({ ...userData, [e.target.name]: e.target.value })}
+                                        className={`border w-full rounded-md py-1 px-2 ${isPasswordEmpty ? 'border-red-600': 'border-slate-500'}`}
+                                        onChange={(e) => {
+                                            setUserData({ ...userData, [e.target.name]: e.target.value });
+                                            setIsPasswordEmpty(false);
+                                        }}
                                     />
+                                    {isPasswordEmpty && <p className='text-red-600 text-xs'>Set a password</p>}
                                 </label>
                                 <p className='text-center text-xs mb-3'>By clicking Agree & Join, you agree to the LinkedIn User Agreement, Privacy Policy, and Cookie Policy.</p>
                                 <button
-                                    type='button'
-                                    onClick={onRegister}
+                                    type='submit'
                                     className='mb-3 w-full bg-blue-600 hover:bg-blue-800 rounded-full py-3 text-white font-semibold'
                                 >Agree & Join</button>
 

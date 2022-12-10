@@ -10,6 +10,7 @@ import HeaderOptions from './HeaderOptions';
 import { logout } from '../../features/userSlice';
 import { useDispatch } from 'react-redux';
 import { auth } from '../../Firebase';
+import { signOut } from 'firebase/auth';
 
 
 const Header = () => {
@@ -33,7 +34,7 @@ const Header = () => {
     const logoutHandle = (e) => {
         e.preventDefault();
         dispatch(logout());
-        auth.signOut();
+        signOut(auth);
     } 
 
     return (

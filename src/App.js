@@ -10,27 +10,26 @@ import RequireAuth from './components/auth/RequireAuth';
 import Signup from './components/Signup';
 
 function App() {
-  const user = useSelector(selectUser);
-  const dispatch = useDispatch();
+  // const user = useSelector(selectUser);
+  // const dispatch = useDispatch();
 
-  console.log(auth.currentUser);
-
-  useEffect(() => {
-    onAuthStateChanged(auth, (loggedInuser) => {
-      if (loggedInuser) {
-        //user is signed in
-        dispatch(login({
-          email: loggedInuser.email,
-          uid: loggedInuser.uid,
-          displayName: loggedInuser.displayName,
-          photoURL: loggedInuser.photoURL
-        }))
-      } else {
-        //user is signed out
-        dispatch(logout());
-      }
-    });
-  }, [])
+  // useEffect(() => {
+  //   onAuthStateChanged(auth, (loggedInuser) => {
+  //     if (loggedInuser) {
+  //       //user is signed in
+  //       console.log(loggedInuser);
+  //       dispatch(login({
+  //         email: loggedInuser.email,
+  //         uid: loggedInuser.uid,
+  //         displayName: loggedInuser.displayName,
+  //         photoURL: loggedInuser.photoURL
+  //       }))
+  //     } else {
+  //       //user is signed out
+  //       dispatch(logout());
+  //     }
+  //   });
+  // }, [])
 
   return (
     <BrowserRouter>
