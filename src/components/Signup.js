@@ -45,7 +45,7 @@ function Signup() {
                 }))
                 toast.success('Account Created', {theme: 'colored'});
                 setTimeout(() => {
-                    navigate('/');
+                    navigate('/login');
                 }, 1000);
             })
             .catch((error) => {

@@ -33,6 +33,7 @@ const Header = () => {
 
     const logoutHandle = (e) => {
         e.preventDefault();
+        console.log("Entered");
         dispatch(logout());
         signOut(auth);
     } 
@@ -139,13 +140,13 @@ const Header = () => {
                                             <div className="px-1 py-1">
                                                 <Menu.Item>
                                                     {({ active }) => (
-                                                        <a href='#'
+                                                        <button
                                                             onClick={logoutHandle}
                                                             className={`${active ? 'bg-violet-500 text-white' : 'text-gray-900'
                                                                 } group flex w-full items-center rounded-md px-2 py-1 text-sm`}
                                                         >
                                                             Sign Out
-                                                        </a>
+                                                        </button>
                                                     )}
                                                 </Menu.Item>
                                             </div>

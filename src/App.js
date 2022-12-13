@@ -10,7 +10,6 @@ import RequireAuth from './components/auth/RequireAuth';
 import Signup from './components/Signup';
 
 function App() {
-  // const user = useSelector(selectUser);
   // const dispatch = useDispatch();
 
   // useEffect(() => {
