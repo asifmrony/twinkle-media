@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { useDispatch } from 'react-redux';
 import { auth } from '../Firebase'
 import { login } from '../features/userSlice'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -89,6 +89,11 @@ function Login() {
                                     }}
                                 />
                                 {isPasswordEmpty && <p className='text-red-600 text-xs'>Password is required</p>}
+                                <p className='text-end mr-1'>
+                                    <Link to='/reset-password' className='text-blue-600 text-sm'>
+                                        forgot password?
+                                    </Link>
+                                </p>
                             </label>
                             <p className='text-center text-xs mb-3'>By clicking Agree & Join, you agree to the LinkedIn User Agreement, Privacy Policy, and Cookie Policy.</p>
                             <button
@@ -97,7 +102,7 @@ function Login() {
                             >Sign In</button>
                         </form>
                     </div>
-                    <p className='text-sm max-w-sm mx-auto text-center mt-4'>Not a Member? <span className='text-blue-600 font-semibold cursor-pointer' onClick={() => navigate('/signup')}>Register Now</span></p>
+                    <p className='text-sm max-w-sm mx-auto text-center mt-4'>Not a Member? <span className='text-blue-700 font-semibold cursor-pointer' onClick={() => navigate('/signup')}>Register Now</span></p>
                 </div>
             </div>
         </section>

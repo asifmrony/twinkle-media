@@ -8,27 +8,9 @@ import Login from './components/Login';
 import { login, logout, selectUser } from './features/userSlice';
 import RequireAuth from './components/auth/RequireAuth';
 import Signup from './components/Signup';
+import ResetPassword from './components/ResetPassword';
 
 function App() {
-  // const dispatch = useDispatch();
-
-  // useEffect(() => {
-  //   onAuthStateChanged(auth, (loggedInuser) => {
-  //     if (loggedInuser) {
-  //       //user is signed in
-  //       console.log(loggedInuser);
-  //       dispatch(login({
-  //         email: loggedInuser.email,
-  //         uid: loggedInuser.uid,
-  //         displayName: loggedInuser.displayName,
-  //         photoURL: loggedInuser.photoURL
-  //       }))
-  //     } else {
-  //       //user is signed out
-  //       dispatch(logout());
-  //     }
-  //   });
-  // }, [])
 
   return (
     <BrowserRouter>
@@ -45,6 +27,7 @@ function App() {
             />
             <Route path='/login' element={<Login />} />
             <Route path='/signup' element={<Signup />} />
+            <Route path='/reset-password' element={<ResetPassword />} />
           </Routes>
         </div>
       </>
