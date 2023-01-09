@@ -7,8 +7,8 @@ import { RiMessage2Fill } from 'react-icons/ri';
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment } from 'react';
 import HeaderOptions from './HeaderOptions';
-import { logout } from '../../features/userSlice';
-import { useDispatch } from 'react-redux';
+import { logout, selectUser } from '../../features/userSlice';
+import { useDispatch, useSelector } from 'react-redux';
 import { auth } from '../../Firebase';
 import { signOut } from 'firebase/auth';
 
@@ -16,6 +16,7 @@ import { signOut } from 'firebase/auth';
 const Header = () => {
     const [isMenuActive, setIsMenuActive] = useState('Home');
     const dispatch = useDispatch();
+    const user = useSelector(selectUser);
 
     const navLinks = [
         {label: 'Home', icon: FaHome},
@@ -78,7 +79,7 @@ const Header = () => {
                                 <Menu as="div" className="relative inline-block text-left">
                                     <div>
                                         <Menu.Button className='flex flex-col items-center px-3 py-1'>
-                                            <img src="https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50" alt="" className='h-6 w-6 object-contain rounded-full' />
+                                            <img src={user?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='h-6 w-6 object-contain rounded-full' />
                                             <div className='flex items-center'>
                                                 <span className=''>Me</span>
                                                 <BiChevronDown className='h-5 w-5' />
@@ -99,10 +100,10 @@ const Header = () => {
                                                 <a href="#">
                                                     <div className="flex items-center gap-x-2">
                                                         <div>
-                                                            <img src="https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50" alt="" className='h-[3.5rem] w-[3.5rem] rounded-full object-contain' />
+                                                            <img src={user?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='h-[3.5rem] w-[3.5rem] rounded-full object-contain' />
                                                         </div>
                                                         <div>
-                                                            <h2 className='font-semibold'>Ashik Mahmud Rasel</h2>
+                                                            <h2 className='font-semibold'>{user?.displayName}</h2>
                                                             <p className='text-[14px]'>Merchandiser at Richcotton Ltd.</p>
                                                         </div>
                                                     </div>

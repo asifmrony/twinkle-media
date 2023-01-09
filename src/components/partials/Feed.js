@@ -1,28 +1,31 @@
-import React, { useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { BsCalendarDate, BsReverseLayoutTextSidebarReverse, BsThreeDots } from 'react-icons/bs'
 import { HiPhoto, HiVideoCamera, HiOutlinePaperAirplane } from 'react-icons/hi2'
 import { AiOutlineLike } from 'react-icons/ai';
 import { FaRegCommentDots, FaUserCircle } from 'react-icons/fa';
 import { TbArrowAutofitDown } from 'react-icons/tb';
 import { db } from '../../Firebase';
-import { addDoc, collection, deleteDoc, getDocs, updateDoc, doc, serverTimestamp, query, orderBy } from 'firebase/firestore/lite';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../features/userSlice';
+import { Menu, Transition, Dialog } from '@headlessui/react';
+import { toast, ToastContainer } from 'react-toastify';
+import { getDocs, serverTimestamp } from 'firebase/firestore/lite';
+import { collection, onSnapshot, addDoc, query, orderBy, getDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+/**
+ * Firestore Lite SDK does not support listeners. 
+ * Try importing getFirestore(), onSnapshot and others (if necessary) from the standard SDK.
+ * Source: https://stackoverflow.com/questions/74983470/why-firebase-give-this-error-when-i-use-onsnapshot
+ * 
+*/
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
   const [postInput, setPostInput] = useState('');
-  // const collectionRef = collection(db, 'cities');
+  const [isOpen, setIsOpen] = useState(false);
+  const [postToUpdate, setPostToUpdate] = useState({});
+  const [updatedMessage, setUpdatedMessage] = useState('');
   const postsRef = collection(db, 'posts');
-
-  useEffect(() => {
-    const getPosts = async () => {
-      // setPosts(data.docs.map(doc => ({ ...doc.data(), id: doc.id })));
-      const q = query(postsRef, orderBy('timestamp', 'desc'));
-      const querySnapshot = await getDocs(q);
-      setPosts(querySnapshot.docs.map((doc) => ({data: doc.data(), id: doc.id})));
-    }
-
-    getPosts();
-  }, [])
+  const user = useSelector(selectUser);
 
   console.log(postInput);
   console.log(posts);
@@ -31,27 +34,85 @@ const Feed = () => {
   const sendPost = async (e) => {
     e.preventDefault();
     await addDoc(postsRef, {
-      name: 'Asif Mahmud Rony',
-      designation: 'React Enthusiast',
+      name: user?.displayName,
+      designation: user?.email,
       message: postInput,
-      photUrl: '',
-      timestamp: serverTimestamp(),
+      photUrl: user?.photoURL || '',
+      // timestamp: serverTimestamp(),
+    }).then(() => {
+      toast("Your post has been created.");
+      setPostInput('');
+    }).catch((err) => {
+      console.log(err);
+      toast(err.message);
     })
-    console.log('Happeing Realtime');
-    setPostInput('');
   }
 
-  //Update Posts [Modification requires]
-  const updatePost = async (id, updateMessage) => {
+  useEffect(() => {
+    // const getPosts = async () => {
+    //   const q = query(postsRef, orderBy('timestamp', 'desc'));
+    //   const querySnapshot = await getDocs(q);
+    //   setPosts(querySnapshot.docs.map((doc) => {
+    //     console.log(doc.data());
+    //     return {...doc.data(), id: doc.id};
+    //   }));
+    // }
+
+    // getPosts();
+
+    const subscribe = () => {
+      /**
+       * TO-DO: posts sorting order
+       * query(), orderBy() dont work with realtime onSnapshot listener
+       * Find a workaround for this one below ->
+       * const q = query(postsRef, orderBy('timestamp', 'desc'));
+       */
+      onSnapshot(postsRef, (snapshot) => {
+        setPosts(snapshot.docs.map((doc) => {
+          return {
+            ...doc.data(),
+            id: doc.id
+          }
+        }))
+      })
+    }
+    subscribe();
+    return () => {
+      subscribe()
+    }
+  }, [])
+
+  const openModal = async (id) => {
+    setIsOpen(true);
+    const docRef = doc(db, "posts", id)
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      setPostToUpdate({...docSnap.data(), id: id});
+      setUpdatedMessage(docSnap.data().message);
+    } else {
+      // doc.data() will be undefined in this case
+      console.log("No such document!");
+    }
+  }
+  console.log(postToUpdate, updatedMessage);
+
+  //Update Posts
+  const updatePost = (id) => {
     const postDoc = doc(db, 'posts', id);
     // Edited message as update post data
-    const newMessage = { message: updateMessage }
-    await updateDoc(postDoc, newMessage);
+    const newMessage = { message: updatedMessage }
+    updateDoc(postDoc, newMessage)
+      .then(() => {
+        toast('Post Updated');
+        setTimeout(() => setIsOpen(false), 2000);
+      })
+      .catch((err) => toast.error(err.message));
   }
 
 
   //Delete Posts [Modification requires]
-  const deleteUser = async (id) => {
+  const deletePost = async (id) => {
     const postdoc = doc(db, 'posts', id);
     await deleteDoc(postdoc);
   }
@@ -75,19 +136,12 @@ const Feed = () => {
   return (
     <div className='col-span-5'>
       <div className="feed space-y-2">
-        {/* Test Cities */}
-        {/* {test.map(dt => (
-          <div>
-            <h1>{dt.tk}</h1>
-            <h3>{dt.tn}</h3>
-            <h6>{dt.id}</h6>
-          </div>
-        ))} */}
+        <ToastContainer />
         {/* Post Sharing Card */}
         <div className="card-wrapper px-3 pt-3">
           <div className="flex items-center space-x-3">
             <div className='w-14 h-14 bg-white rounded-full p-[2px]'>
-              <img src="https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50" alt="" className='w-full h-full rounded-full' />
+              <img src={user?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
             </div>
             <form className='flex-1'>
               <input
@@ -113,18 +167,66 @@ const Feed = () => {
         </div>
 
         {/* Post in Feed */}
-        {posts.map(({ id, data: { name, designation, message, photoUrl }}) => (
+        {posts.map(({ id, name, designation, message, photUrl }) => (
           <div className="card-wrapper px-3" key={id}>
             <div className="flex space-x-2 pt-3">
               <div className='w-14 h-14 bg-white rounded-full p-[2px]'>
-                <img src={photoUrl || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
+                <img src={photUrl || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
               </div>
               <div className='text-sm flex-1 text-neutral-700'>
                 <h1 className='font-medium'>{name}</h1>
                 <p className='font-light'>{designation}</p>
                 <p className='text-xs font-light'>24m ago</p>
               </div>
-              <BsThreeDots className='text-neutral-500 h-6 w-6' />
+
+              <Menu as="div" className="relative inline-block text-left">
+                <div>
+                  <Menu.Button className=''>
+                    <BsThreeDots className='text-neutral-500 h-6 w-6' />
+                  </Menu.Button>
+                </div>
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
+                >
+                  <Menu.Items className="absolute right-0 mt-0 w-[8rem] origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+
+                    <div className="px-1 pt-1">
+                      <Menu.Item>
+                        {({ active }) => (
+                          <button
+                            onClick={() => openModal(id)}
+                            type='button'
+                            className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'
+                              } group flex w-full items-center rounded-md px-2 py-1 text-sm`}
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </Menu.Item>
+                    </div>
+                    <div className="px-1 pb-1">
+                      <Menu.Item>
+                        {({ active }) => (
+                          <button
+                            type='button'
+                            onClick={() => deletePost(id)}
+                            className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'
+                              } group flex w-full items-center rounded-md px-2 py-1 text-sm`}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </Menu.Item>
+                    </div>
+                  </Menu.Items>
+                </Transition>
+              </Menu>
             </div>
             <div className='py-3 text-sm text-neutral-700'>
               {message}
@@ -135,6 +237,66 @@ const Feed = () => {
               {postShareButton(<TbArrowAutofitDown className='h-5 w-5 text-slate-500' />, 'Repost')}
               {postShareButton(<HiOutlinePaperAirplane className='h-5 w-5 text-slate-500' />, 'Send')}
             </div>
+            <Transition appear show={isOpen} as={Fragment}>
+              <Dialog as="div" className="relative z-10" onClose={() => setIsOpen(false)}>
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <div className="fixed inset-0 bg-black bg-opacity-25" />
+                </Transition.Child>
+
+                <div className="fixed inset-0 overflow-y-auto">
+                  <div className="flex min-h-full items-center justify-center p-4 text-center">
+                    <Transition.Child
+                      as={Fragment}
+                      enter="ease-out duration-300"
+                      enterFrom="opacity-0 scale-95"
+                      enterTo="opacity-100 scale-100"
+                      leave="ease-in duration-200"
+                      leaveFrom="opacity-100 scale-100"
+                      leaveTo="opacity-0 scale-95"
+                    >
+                      <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                        <Dialog.Title
+                          as="h3"
+                          className="text-lg font-medium leading-6 text-gray-900"
+                        >
+                          Update your post
+                        </Dialog.Title>
+                        <div className="mt-2">
+                          {/* <p className="text-sm text-gray-500">
+                            Your payment has been successfully submitted. We’ve sent
+                            you an email with all of the details of your order.
+                          </p> */}
+                          <textarea name="" id="" 
+                            rows="7" 
+                            value={updatedMessage}
+                            onChange={(e) => setUpdatedMessage(e.target.value)}
+                            className='text-sm text-gray-500 w-full p-2 border border-gray-200 rounded-md focus:outline-none'>                            
+                          </textarea>
+                        </div>
+
+                        <div className="mt-4">
+                          <button
+                            type="button"
+                            className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            onClick={() => updatePost(postToUpdate?.id)}
+                          >
+                            Update
+                          </button>
+                        </div>
+                      </Dialog.Panel>
+                    </Transition.Child>
+                  </div>
+                </div>
+              </Dialog>
+            </Transition>
           </div>
         ))}
         {/* <div className="card-wrapper px-3">

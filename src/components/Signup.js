@@ -40,20 +40,23 @@ function Signup() {
                 dispatch(login({
                     email: userInfo.user.email,
                     uid: userInfo.user.uid,
-                    displayName: userData.fullName,
-                    photoURL: userData.profilePic
+                    displayName: userInfo.user.fullName,
+                    photoURL: userInfo.user.photoURL
                 }))
-                toast.success('Account Created', {theme: 'colored'});
+                toast.success('Account Created', { theme: 'colored' });
                 setTimeout(() => {
                     navigate('/login');
                 }, 1000);
             })
             .catch((error) => {
                 console.log(error);
+                console.log(error.code);
                 if (error.code == 'auth/email-already-in-use') {
                     toast.error('Already an user with this email.', { theme: 'colored' })
                 } else if (error.code == 'auth/weak-password') {
                     toast.error('The Password is too weak.', { theme: 'colored' })
+                } else if (error.code == 'auth/invalid-email') {
+                    toast.error('Invalid Email.', { theme: 'colored' })
                 }
             });
     }
@@ -80,7 +83,7 @@ function Signup() {
                                         onChange={(e) => {
                                             setUserData({ ...userData, [e.target.name]: e.target.value });
                                             setIsNameEmpty(false);
-                                        }} 
+                                        }}
                                     />
                                     {isNameEmpty && <p className='text-red-600 text-xs'>Enter your Name</p>}
                                 </label>
@@ -104,9 +107,9 @@ function Signup() {
                                             setUserData({ ...userData, [e.target.name]: e.target.value });
                                             setIsEmailEmpty(false)
                                         }}
-                                        className={`border w-full rounded-md py-1 px-2 ${isEmailEmpty ? 'border-red-600': 'border-slate-500'}`} />
+                                        className={`border w-full rounded-md py-1 px-2 ${isEmailEmpty ? 'border-red-600' : 'border-slate-500'}`} />
                                     {isEmailEmpty && <p className='text-red-600 text-xs'>Enter you email</p>}
-                                    
+
                                 </label>
                                 <label htmlFor="pwd" className='space-y-1 block mb-3'>
                                     <p className='text-gray-500 text-sm'>Password</p>
@@ -114,7 +117,7 @@ function Signup() {
                                         type="text"
                                         id='pwd'
                                         name='password'
-                                        className={`border w-full rounded-md py-1 px-2 ${isPasswordEmpty ? 'border-red-600': 'border-slate-500'}`}
+                                        className={`border w-full rounded-md py-1 px-2 ${isPasswordEmpty ? 'border-red-600' : 'border-slate-500'}`}
                                         onChange={(e) => {
                                             setUserData({ ...userData, [e.target.name]: e.target.value });
                                             setIsPasswordEmpty(false);

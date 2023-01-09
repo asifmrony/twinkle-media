@@ -28,6 +28,7 @@ function Login() {
         signInWithEmailAndPassword(auth, userData.email, userData.password)
             .then((userInfo) => {
                 //Signed In
+                console.log(userInfo);
                 //Send user to redux store
                 dispatch(login({
                     email: userInfo.user.email,
