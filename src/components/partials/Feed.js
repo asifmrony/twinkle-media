@@ -4,13 +4,16 @@ import { HiPhoto, HiVideoCamera, HiOutlinePaperAirplane } from 'react-icons/hi2'
 import { AiOutlineLike } from 'react-icons/ai';
 import { FaRegCommentDots, FaUserCircle } from 'react-icons/fa';
 import { TbArrowAutofitDown } from 'react-icons/tb';
-import { db } from '../../Firebase';
+import { IoIosWarning } from 'react-icons/io'
+import { db, storage } from '../../Firebase';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/userSlice';
 import { Menu, Transition, Dialog } from '@headlessui/react';
 import { toast, ToastContainer } from 'react-toastify';
 import { getDocs, serverTimestamp } from 'firebase/firestore/lite';
 import { collection, onSnapshot, addDoc, query, orderBy, getDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
+
 /**
  * Firestore Lite SDK does not support listeners. 
  * Try importing getFirestore(), onSnapshot and others (if necessary) from the standard SDK.
@@ -21,9 +24,12 @@ import { collection, onSnapshot, addDoc, query, orderBy, getDoc, doc, updateDoc,
 const Feed = () => {
   const [posts, setPosts] = useState([]);
   const [postInput, setPostInput] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [postToUpdate, setPostToUpdate] = useState({});
+  const [postToDelete, setPostToDelete] = useState(null);
   const [updatedMessage, setUpdatedMessage] = useState('');
+  const [file, setFile] = useState();
   const postsRef = collection(db, 'posts');
   const user = useSelector(selectUser);
 
@@ -33,19 +39,47 @@ const Feed = () => {
   // Send Post Data to firebase database
   const sendPost = async (e) => {
     e.preventDefault();
-    await addDoc(postsRef, {
-      name: user?.displayName,
-      designation: user?.email,
-      message: postInput,
-      photUrl: user?.photoURL || '',
-      // timestamp: serverTimestamp(),
-    }).then(() => {
-      toast("Your post has been created.");
-      setPostInput('');
-    }).catch((err) => {
-      console.log(err);
-      toast(err.message);
-    })
+    // await addDoc(postsRef, {
+    //   name: user?.displayName,
+    //   designation: user?.email,
+    //   message: postInput,
+    //   photUrl: user?.photoURL || '',
+    //   // timestamp: serverTimestamp(),
+    // }).then(() => {
+    //   toast("Your post has been created.");
+    //   setPostInput('');
+    // }).catch((err) => {
+    //   console.log(err);
+    //   toast(err.message);
+    // })
+    const storageRef = ref(storage, file.name);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+          case 'paused':
+            console.log('Upload is paused');
+            break;
+          case 'running':
+            console.log('Upload is running');
+            break;
+        }
+      },
+      (error) => {
+        // Handle unsuccessful uploads
+      },
+      () => {
+        // Handle successful uploads on complete
+        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          console.log('File available at', downloadURL);
+        });
+      }
+    );
   }
 
   useEffect(() => {
@@ -83,12 +117,12 @@ const Feed = () => {
   }, [])
 
   const openModal = async (id) => {
-    setIsOpen(true);
+    setIsEditOpen(true);
     const docRef = doc(db, "posts", id)
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      setPostToUpdate({...docSnap.data(), id: id});
+      setPostToUpdate({ ...docSnap.data(), id: id });
       setUpdatedMessage(docSnap.data().message);
     } else {
       // doc.data() will be undefined in this case
@@ -105,7 +139,7 @@ const Feed = () => {
     updateDoc(postDoc, newMessage)
       .then(() => {
         toast('Post Updated');
-        setTimeout(() => setIsOpen(false), 2000);
+        setTimeout(() => setIsEditOpen(false), 2000);
       })
       .catch((err) => toast.error(err.message));
   }
@@ -114,7 +148,15 @@ const Feed = () => {
   //Delete Posts [Modification requires]
   const deletePost = async (id) => {
     const postdoc = doc(db, 'posts', id);
-    await deleteDoc(postdoc);
+    await deleteDoc(postdoc)
+      .then(() => {
+        toast.error('Post has been Deleted');
+        setIsDeleteOpen(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        toast('Error Deleting Post');
+      })
   }
 
   const convertToReadableTime = (time) => {
@@ -152,6 +194,11 @@ const Feed = () => {
               placeholder:font-semibold border outline-1 outline-transparent border-neutral-500 placeholder:text-sm
                focus:border-blue-500 focus:border-2'
                 placeholder='Start a post' />
+              <input
+                type="file"
+                name="photoShare"
+                onChange={(e) => setFile(e.target.files[0])}
+                id="photoShare" />
               <button
                 type="submit"
                 className='border border-nutral-500 p-3 hidden'
@@ -215,7 +262,10 @@ const Feed = () => {
                         {({ active }) => (
                           <button
                             type='button'
-                            onClick={() => deletePost(id)}
+                            onClick={() => {
+                              setIsDeleteOpen(true);
+                              setPostToDelete(id);
+                            }}
                             className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'
                               } group flex w-full items-center rounded-md px-2 py-1 text-sm`}
                           >
@@ -237,8 +287,8 @@ const Feed = () => {
               {postShareButton(<TbArrowAutofitDown className='h-5 w-5 text-slate-500' />, 'Repost')}
               {postShareButton(<HiOutlinePaperAirplane className='h-5 w-5 text-slate-500' />, 'Send')}
             </div>
-            <Transition appear show={isOpen} as={Fragment}>
-              <Dialog as="div" className="relative z-10" onClose={() => setIsOpen(false)}>
+            <Transition appear show={isEditOpen} as={Fragment}>
+              <Dialog as="div" className="relative z-10" onClose={() => setIsEditOpen(false)}>
                 <Transition.Child
                   as={Fragment}
                   enter="ease-out duration-300"
@@ -270,15 +320,11 @@ const Feed = () => {
                           Update your post
                         </Dialog.Title>
                         <div className="mt-2">
-                          {/* <p className="text-sm text-gray-500">
-                            Your payment has been successfully submitted. We’ve sent
-                            you an email with all of the details of your order.
-                          </p> */}
-                          <textarea name="" id="" 
-                            rows="7" 
+                          <textarea name="" id=""
+                            rows="7"
                             value={updatedMessage}
                             onChange={(e) => setUpdatedMessage(e.target.value)}
-                            className='text-sm text-gray-500 w-full p-2 border border-gray-200 rounded-md focus:outline-none'>                            
+                            className='text-sm text-gray-500 w-full p-2 border border-gray-200 rounded-md focus:outline-none'>
                           </textarea>
                         </div>
 
@@ -289,6 +335,69 @@ const Feed = () => {
                             onClick={() => updatePost(postToUpdate?.id)}
                           >
                             Update
+                          </button>
+                        </div>
+                      </Dialog.Panel>
+                    </Transition.Child>
+                  </div>
+                </div>
+              </Dialog>
+            </Transition>
+            <Transition appear show={isDeleteOpen} as={Fragment}>
+              <Dialog as="div" className="relative z-10" onClose={() => setIsDeleteOpen(false)}>
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <div className="fixed inset-0 bg-black bg-opacity-25" />
+                </Transition.Child>
+
+                <div className="fixed inset-0 overflow-y-auto">
+                  <div className="flex min-h-full items-center justify-center p-4 text-center">
+                    <Transition.Child
+                      as={Fragment}
+                      enter="ease-out duration-300"
+                      enterFrom="opacity-0 scale-95"
+                      enterTo="opacity-100 scale-100"
+                      leave="ease-in duration-200"
+                      leaveFrom="opacity-100 scale-100"
+                      leaveTo="opacity-0 scale-95"
+                    >
+                      <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                        <Dialog.Title
+                          as="h3"
+                          className="text-lg font-medium leading-6 text-red-600 flex items-center space-x-2"
+                        >
+                          <IoIosWarning /> <span>Delete</span>
+                        </Dialog.Title>
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-500">
+                            Do you really want to Delete the post?
+                          </p>
+                        </div>
+
+                        <div className="mt-4 flex space-x-2">
+                          <button
+                            type="button"
+                            className="inline-flex justify-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-900 focus:outline-none"
+                            onClick={() => {
+                              setIsDeleteOpen(false);
+                              setPostToDelete(null);
+                            }}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            className="inline-flex justify-center rounded-md border border-transparent bg-red-100 px-4 py-2 text-sm font-medium text-red-900 hover:bg-red-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                            onClick={() => deletePost(postToDelete)}
+                          >
+                            Yes, Delete it!
                           </button>
                         </div>
                       </Dialog.Panel>
