@@ -1,4 +1,4 @@
-const postShareButton = ({icon, label}) => {
+const PostShareButton = ({icon, label}) => {
     return (
       <div className='flex cursor-pointer items-center space-x-2 py-3 px-1 hover:bg-gray-100 rounded-md'>
         {icon}
@@ -7,4 +7,4 @@ const postShareButton = ({icon, label}) => {
     )
   }
 
-export default postShareButton
+export default PostShareButton

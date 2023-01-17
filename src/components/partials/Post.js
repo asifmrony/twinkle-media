@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../Firebase";
 import { Menu, Transition, Dialog } from '@headlessui/react';
@@ -11,12 +11,28 @@ import { BsThreeDots } from 'react-icons/bs';
 import { HiOutlinePaperAirplane } from 'react-icons/hi2'
 import PostShareButton from "./PostShareButton";
 
-const Post = ({ id, name, designation, message, photUrl }) => {
+const Post = ({ userId, postId, date, message }) => {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [postToUpdate, setPostToUpdate] = useState({});
     const [postToDelete, setPostToDelete] = useState(null);
     const [updatedMessage, setUpdatedMessage] = useState('');
+    const [postAuthor, setPostAuthor] = useState('');
+    
+    useEffect(() => {
+        const getPostAuthor = async () => {
+            const docSnap = await getDoc(doc(db, "users", userId))
+            if(docSnap.exists()) {
+                console.log('Document Data', docSnap.data());
+                setPostAuthor(docSnap.data());
+            } else {
+                console.log('No Such Documents');
+            }
+        }
+        getPostAuthor()
+      
+    }, [postId])
+    
 
     const openModal = async (id) => {
         setIsEditOpen(true);
@@ -31,8 +47,6 @@ const Post = ({ id, name, designation, message, photUrl }) => {
             console.log("No such document!");
         }
     }
-
-    console.log(postToUpdate, updatedMessage);
 
     //Update Posts
     const updatePost = (id) => {
@@ -72,15 +86,15 @@ const Post = ({ id, name, designation, message, photUrl }) => {
     //   }
 
     return (
-        <div className="card-wrapper px-3" key={id}>
+        <div className="card-wrapper px-3">
             <ToastContainer />
             <div className="flex space-x-2 pt-3">
                 <div className='w-14 h-14 bg-white rounded-full p-[2px]'>
-                    <img src={photUrl || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
+                    <img src={postAuthor?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
                 </div>
                 <div className='text-sm flex-1 text-neutral-700'>
-                    <h1 className='font-medium'>{name}</h1>
-                    <p className='font-light'>{designation}</p>
+                    <h1 className='font-medium'>{postAuthor?.displayName}</h1>
+                    {/* <p className='font-light'>{designation}</p> */}
                     <p className='text-xs font-light'>24m ago</p>
                 </div>
 
@@ -105,7 +119,7 @@ const Post = ({ id, name, designation, message, photUrl }) => {
                                 <Menu.Item>
                                     {({ active }) => (
                                         <button
-                                            onClick={() => openModal(id)}
+                                            onClick={() => openModal(postId)}
                                             type='button'
                                             className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'
                                                 } group flex w-full items-center rounded-md px-2 py-1 text-sm`}
@@ -122,7 +136,7 @@ const Post = ({ id, name, designation, message, photUrl }) => {
                                             type='button'
                                             onClick={() => {
                                                 setIsDeleteOpen(true);
-                                                setPostToDelete(id);
+                                                setPostToDelete(postId);
                                             }}
                                             className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'
                                                 } group flex w-full items-center rounded-md px-2 py-1 text-sm`}

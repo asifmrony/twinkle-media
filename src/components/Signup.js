@@ -3,9 +3,10 @@ import React, { useState } from 'react'
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom'
 import { login } from '../features/userSlice';
-import { auth } from '../Firebase';
+import { auth, db } from '../Firebase';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { doc, setDoc } from 'firebase/firestore';
 
 function Signup() {
     const navigate = useNavigate();
@@ -35,6 +36,12 @@ function Signup() {
                 updateProfile(auth.currentUser, {
                     displayName: userData.fullName,
                     photoURL: userData.profilePic
+                })
+                setDoc(doc(db, "users", userInfo.user.uid), {
+                    id: userInfo.user.uid,
+                    displayName: userData.fullName,
+                    photoURL: userData.profilePic,
+                    date: Date.now()
                 })
                 //Send user to redux store
                 dispatch(login({
