@@ -9,6 +9,7 @@ import { login, logout, selectUser } from './features/userSlice';
 import RequireAuth from './components/auth/RequireAuth';
 import Signup from './components/Signup';
 import ResetPassword from './components/ResetPassword';
+import Profile from './components/Profile';
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
                 </RequireAuth>
               } 
             />
+            <Route path='/profile/:id' element={<Profile />}/>
             <Route path='/login' element={<Login />} />
             <Route path='/signup' element={<Signup />} />
             <Route path='/reset-password' element={<ResetPassword />} />

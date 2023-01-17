@@ -10,6 +10,10 @@ import { IoIosWarning } from 'react-icons/io';
 import { BsThreeDots } from 'react-icons/bs';
 import { HiOutlinePaperAirplane } from 'react-icons/hi2'
 import PostShareButton from "./PostShareButton";
+import { formatDistanceToNow } from "date-fns";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../features/userSlice";
 
 const Post = ({ userId, postId, date, message }) => {
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -18,12 +22,14 @@ const Post = ({ userId, postId, date, message }) => {
     const [postToDelete, setPostToDelete] = useState(null);
     const [updatedMessage, setUpdatedMessage] = useState('');
     const [postAuthor, setPostAuthor] = useState('');
+    const user = useSelector(selectUser);
+
+    console.log(date)
     
     useEffect(() => {
         const getPostAuthor = async () => {
             const docSnap = await getDoc(doc(db, "users", userId))
             if(docSnap.exists()) {
-                console.log('Document Data', docSnap.data());
                 setPostAuthor(docSnap.data());
             } else {
                 console.log('No Such Documents');
@@ -90,15 +96,19 @@ const Post = ({ userId, postId, date, message }) => {
             <ToastContainer />
             <div className="flex space-x-2 pt-3">
                 <div className='w-14 h-14 bg-white rounded-full p-[2px]'>
-                    <img src={postAuthor?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
+                    <Link to={`/profile/${userId}`} >
+                        <img src={postAuthor?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
+                    </Link>
                 </div>
                 <div className='text-sm flex-1 text-neutral-700'>
-                    <h1 className='font-medium'>{postAuthor?.displayName}</h1>
+                    <Link to={`/profile/${userId}`} >
+                        <h1 className='font-medium'>{postAuthor?.displayName}</h1>                    
+                    </Link >
                     {/* <p className='font-light'>{designation}</p> */}
-                    <p className='text-xs font-light'>24m ago</p>
+                    <p className='text-xs font-light'>{formatDistanceToNow(date)} ago</p>
                 </div>
 
-                <Menu as="div" className="relative inline-block text-left">
+                {user?.uid === userId && <Menu as="div" className="relative inline-block text-left">
                     <div>
                         <Menu.Button className=''>
                             <BsThreeDots className='text-neutral-500 h-6 w-6' />
@@ -148,7 +158,7 @@ const Post = ({ userId, postId, date, message }) => {
                             </div>
                         </Menu.Items>
                     </Transition>
-                </Menu>
+                </Menu>}
             </div>
             <div className='py-3 text-sm text-neutral-700'>
                 {message}
