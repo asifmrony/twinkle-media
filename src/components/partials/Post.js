@@ -3,7 +3,7 @@ import { deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../Firebase";
 import { Menu, Transition, Dialog } from '@headlessui/react';
 import { toast, ToastContainer } from 'react-toastify';
-import { AiOutlineLike } from 'react-icons/ai';
+import { AiOutlineLike, AiTwotoneLike } from 'react-icons/ai';
 import { FaRegCommentDots } from 'react-icons/fa';
 import { TbArrowAutofitDown } from 'react-icons/tb';
 import { IoIosWarning } from 'react-icons/io';
@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../features/userSlice";
 
-const Post = ({ userId, postId, date, message }) => {
+const Post = ({ likes, userId, postId, date, message }) => {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [postToUpdate, setPostToUpdate] = useState({});
@@ -24,7 +24,9 @@ const Post = ({ userId, postId, date, message }) => {
     const [postAuthor, setPostAuthor] = useState('');
     const user = useSelector(selectUser);
 
-    console.log(date)
+    const likesCount = likes?.length;
+    const isLiked = likes?.includes(user?.uid);
+    
     
     useEffect(() => {
         const getPostAuthor = async () => {
@@ -37,7 +39,7 @@ const Post = ({ userId, postId, date, message }) => {
         }
         getPostAuthor()
       
-    }, [postId])
+    }, [userId])
     
 
     const openModal = async (id) => {
@@ -81,15 +83,6 @@ const Post = ({ userId, postId, date, message }) => {
                 toast('Error Deleting Post');
             })
     }
-
-    // const postShareButton = (icon, label) => {
-    //     return (
-    //       <div className='flex cursor-pointer items-center space-x-2 py-3 px-1 hover:bg-gray-100 rounded-md'>
-    //         {icon}
-    //         <p className='text-sm font-medium text-neutral-500'>{label}</p>
-    //       </div>
-    //     )
-    //   }
 
     return (
         <div className="card-wrapper px-3">
@@ -164,7 +157,14 @@ const Post = ({ userId, postId, date, message }) => {
                 {message}
             </div>
             <div className='py-1 border-t border-gray-100 flex justify-between'>
-                <PostShareButton icon={<AiOutlineLike className='h-5 w-5 text-slate-500' />} label={'Like'} />
+                <PostShareButton 
+                    icon={isLiked ? 
+                        <AiTwotoneLike className='h-5 w-5 text-blue-600' /> : 
+                        <AiOutlineLike className='h-5 w-5 text-slate-500' />} 
+                    label={likesCount} 
+                    postId = {postId}
+                    isLiked = {isLiked}
+                />
                 <PostShareButton icon={<FaRegCommentDots className='h-5 w-5 text-slate-500' />} label={'Comment'} />
                 <PostShareButton icon={<TbArrowAutofitDown className='h-5 w-5 text-slate-500' />} label={'Repost'} />
                 <PostShareButton icon={<HiOutlinePaperAirplane className='h-5 w-5 text-slate-500' />} label={'Send'} />

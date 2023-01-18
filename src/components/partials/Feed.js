@@ -73,8 +73,8 @@ const Feed = () => {
 
         {feedLoading ? 'Loading...' : null}
         {/* Post in Feed */}
-        {posts.map(({ userId, id, message, date }) => (
-          <Post key={id} userId={userId} postId={id} date={date} message={message} />
+        {posts.map(({ likes, userId, id, message, date }) => (
+          <Post key={id} userId={userId} postId={id} date={date} message={message} likes={likes} />
         ))}
         {/* <div className="card-wrapper px-3">
           <div className="flex space-x-2 pt-3">

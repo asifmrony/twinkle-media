@@ -1,5 +1,5 @@
 import { uuidv4 } from "@firebase/util";
-import { doc, setDoc } from "firebase/firestore";
+import { arrayRemove, arrayUnion, doc, setDoc, updateDoc } from "firebase/firestore";
 import { useState } from "react";
 import { db } from "../Firebase";
 
@@ -28,4 +28,19 @@ export function useAddPost() {
     }
 
   return { addPost, isLoading, postCreated, isError }
+}
+
+export function useToggleLike({postId, isLiked, uid}) {
+    const [isLoading, setLoading] = useState(false);
+
+    async function toggleLike() {
+        setLoading(false);
+        const docRef = doc(db, "posts", postId);
+        await updateDoc(docRef, {
+            likes: isLiked ? arrayRemove(uid) : arrayUnion(uid)   
+        }) 
+        setLoading(false);
+    }
+
+    return { toggleLike, isLoading }
 }
