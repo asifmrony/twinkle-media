@@ -46,30 +46,33 @@ export function useToggleLike({postId, isLiked, uid}) {
     return { toggleLike, isLoading }
 }
 
+//TO-DO: Custom hook for loading all posts
+
+// Loads single post
 export function usePost(id) {
     const [post, setPost] = useState({});
-    const [isLoading, setLoading] = useState(false);
+    const [postLoading, setPostLoading] = useState(true);
     const docRef = doc(db, "posts", id);
 
     useEffect(() => {
         async function getPost() {
-            setLoading(true);
+            // setPostLoading(true);
             onSnapshot(docRef, (doc) => {
-                if(doc.exists()) {
+                if (doc.exists()) {
                     setPost(doc.data());
                 } else {
                     console.log("Post not found");
                 }
             })
-            setLoading(false);
+            setPostLoading(false);
         }
         getPost();
     }, [])
 
-    return {post, isLoading};
+    return {post, postLoading};
 }
-//TO-DO 1: Custom hook for loading all posts
-//TO-DO 2: Custom hook for Editing Post
+
+//Edits single post
 export function useUpdatePost() {
     const [isError, setError] = useState('');
     const [postUpdated, setPostUpdated] = useState(false);
@@ -91,7 +94,7 @@ export function useUpdatePost() {
     return {updatePost, postUpdated, isError}
 }
 
-//TO-DO 3: Custom hook for Deleting Post
+//Deletes single post
 export function useDeletePost() {
     const [isError, setError] = useState('');
     const [postDeleted, setPostDeleted] = useState(false);
@@ -110,5 +113,26 @@ export function useDeletePost() {
 
     return {deletePost, postDeleted, isError}
 }
-//TO-DO 3: Custom hook for loading single Post
 
+// Loads Post Author: passing in Post Id
+export function usePostAuthor(id) {
+    const [postAuthor, setPostAuthor] = useState({})
+    const [authorLoading, setAuthorLoading] = useState(false)
+
+    useEffect(() => {
+        const getPostAuthor = async () => {
+            setAuthorLoading(true);
+            const docSnap = await getDoc(doc(db, "users", id))
+            if(docSnap.exists()) {
+                setPostAuthor(docSnap.data());
+            } else {
+                console.log('No Post Author Found');
+            }
+            setAuthorLoading(false);
+        }
+        getPostAuthor()
+      
+    }, [id])
+
+    return { postAuthor, authorLoading }
+}

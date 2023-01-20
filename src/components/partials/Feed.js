@@ -77,7 +77,7 @@ const Feed = () => {
         </section> : null}
         {/* Post in Feed */}
         {posts.map(({ likes, userId, id, message, date }) => (
-          <Post key={id} userId={userId} postId={id} date={date} message={message} likes={likes} />
+          <Post key={id} postId={id} />
         ))}
         {/* <div className="card-wrapper px-3">
           <div className="flex space-x-2 pt-3">

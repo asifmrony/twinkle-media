@@ -10,48 +10,40 @@ import { formatDistanceToNow } from "date-fns";
 import { Link, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../features/userSlice";
-import { useDeletePost, useUpdatePost } from "../../hooks/posts";
+import { useDeletePost, useUpdatePost, usePost, usePostAuthor } from "../../hooks/posts";
 
-const Post = ({ likes, userId, postId, date, message }) => {
+const Post = ({ postId }) => {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [postToUpdate, setPostToUpdate] = useState({});
-    const [postToDelete, setPostToDelete] = useState(null);
     const [updatedMessage, setUpdatedMessage] = useState('');
-    const [postAuthor, setPostAuthor] = useState('');
     const { updatePost, postUpdated, isError : updateError} = useUpdatePost();
     const { deletePost, postDeleted, isError : deleteError } = useDeletePost();
+    const {post : postDoc, isLoading: postLoading} = usePost(postId);
+    const {likes, userId, message, date} = postDoc;
     const user = useSelector(selectUser);
+    const { postAuthor, authorLoading } = usePostAuthor(userId)
 
     const likesCount = likes?.length;
     const isLiked = likes?.includes(user?.uid);
     const params = useParams();
     
-    useEffect(() => {
-        const getPostAuthor = async () => {
-            const docSnap = await getDoc(doc(db, "users", userId))
-            if(docSnap.exists()) {
-                setPostAuthor(docSnap.data());
-            } else {
-                console.log('No Such Documents');
-            }
-        }
-        getPostAuthor()
-      
-    }, [userId])
-    
 
     const openModal = async (id) => {
         setIsEditOpen(true);
-        const docRef = doc(db, "posts", id)
-        const docSnap = await getDoc(docRef);
+        // const docRef = doc(db, "posts", id)
+        // const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists()) {
-            setPostToUpdate({ ...docSnap.data(), id: id });
-            setUpdatedMessage(docSnap.data().message);
+        // if (docSnap.exists()) {
+        //     setPostToUpdate({ ...docSnap.data(), id: id });
+        //     setUpdatedMessage(docSnap.data().message);
+        // } else {
+        //     // doc.data() will be undefined in this case
+        //     console.log("No such document!");
+        // }
+        if(postDoc) {
+            setUpdatedMessage(postDoc?.message);
         } else {
-            // doc.data() will be undefined in this case
-            console.log("No such document!");
+            console.log("Could't get any post");
         }
     }
 
@@ -135,7 +127,6 @@ const Post = ({ likes, userId, postId, date, message }) => {
                                             type='button'
                                             onClick={() => {
                                                 setIsDeleteOpen(true);
-                                                setPostToDelete(postId);
                                             }}
                                             className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'
                                                 } group flex w-full items-center rounded-md px-2 py-1 text-sm`}
@@ -202,7 +193,7 @@ const Post = ({ likes, userId, postId, date, message }) => {
                                         <button
                                             type="button"
                                             className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                                            onClick={() => handleUpdatePost(postToUpdate?.id)}
+                                            onClick={() => handleUpdatePost(postDoc?.id)}
                                         >
                                             Update
                                         </button>
@@ -257,7 +248,6 @@ const Post = ({ likes, userId, postId, date, message }) => {
                                             className="inline-flex justify-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-900 focus:outline-none"
                                             onClick={() => {
                                                 setIsDeleteOpen(false);
-                                                setPostToDelete(null);
                                             }}
                                         >
                                             Cancel
@@ -265,7 +255,7 @@ const Post = ({ likes, userId, postId, date, message }) => {
                                         <button
                                             type="button"
                                             className="inline-flex justify-center rounded-md border border-transparent bg-red-100 px-4 py-2 text-sm font-medium text-red-900 hover:bg-red-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-                                            onClick={() =>  handleDeletePost(postToDelete)}
+                                            onClick={() =>  handleDeletePost(postId)}
                                         >
                                             Yes, Delete it!
                                         </button>
