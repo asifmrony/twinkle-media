@@ -10,6 +10,7 @@ import RequireAuth from './components/auth/RequireAuth';
 import Signup from './components/Signup';
 import ResetPassword from './components/ResetPassword';
 import Profile from './components/Profile';
+import PostDetails from './components/PostDetails';
 
 function App() {
 
@@ -27,6 +28,7 @@ function App() {
               } 
             />
             <Route path='/profile/:id' element={<Profile />}/>
+            <Route path='/post/:id' element={<PostDetails />}/>
             <Route path='/login' element={<Login />} />
             <Route path='/signup' element={<Signup />} />
             <Route path='/reset-password' element={<ResetPassword />} />

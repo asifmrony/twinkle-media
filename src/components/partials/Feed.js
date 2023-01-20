@@ -5,6 +5,7 @@ import { collection, onSnapshot, query, orderBy, getDoc, doc } from 'firebase/fi
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
 import Post from './Post';
 import CreatePost from './CreatePost';
+import Spinner from '../../utils/Spinner';
 
 /**
  * Firestore Lite SDK does not support listeners. 
@@ -39,8 +40,8 @@ const Feed = () => {
        * Find a workaround for this one below ->
        * const q = query(postsRef, orderBy('timestamp', 'desc'));
        */
-      // const q = query(postsRef, orderBy('date', 'desc'));
-      onSnapshot(postsRef, (snapshot) => {
+      const q = query(postsRef, orderBy('date', 'desc'));
+      onSnapshot(q, (snapshot) => {
         if(snapshot.size) {
           setFeedLoading(false);
           setPosts(snapshot.docs.map((doc) => {
@@ -71,7 +72,9 @@ const Feed = () => {
       <div className="feed space-y-2">
         <CreatePost />
 
-        {feedLoading ? 'Loading...' : null}
+        {feedLoading ? <section className='flex items-center justify-center'>
+          <Spinner classList={'w-6 h-6'} />
+        </section> : null}
         {/* Post in Feed */}
         {posts.map(({ likes, userId, id, message, date }) => (
           <Post key={id} userId={userId} postId={id} date={date} message={message} likes={likes} />
@@ -92,10 +95,10 @@ const Feed = () => {
             Any of my network-who are Merchandise Managers-(based in the US currently) want to go work in Barbados for a while? Work for a Global, vertical apparel company in the sun! Reach out to me!
           </div>
           <div className='py-1 border-t border-gray-100 flex justify-between'>
-            {postShareButton(<AiOutlineLike className='h-5 w-5 text-slate-500' />, 'Like')}
-            {postShareButton(<FaRegCommentDots className='h-5 w-5 text-slate-500' />, 'Comment')}
-            {postShareButton(<TbArrowAutofitDown className='h-5 w-5 text-slate-500' />, 'Repost')}
-            {postShareButton(<HiOutlinePaperAirplane className='h-5 w-5 text-slate-500' />, 'Send')}
+            {PostShareButtons(<AiOutlineLike className='h-5 w-5 text-slate-500' />, 'Like')}
+            {PostShareButtons(<FaRegCommentDots className='h-5 w-5 text-slate-500' />, 'Comment')}
+            {PostShareButtons(<TbArrowAutofitDown className='h-5 w-5 text-slate-500' />, 'Repost')}
+            {PostShareButtons(<HiOutlinePaperAirplane className='h-5 w-5 text-slate-500' />, 'Send')}
           </div>
         </div> */}
       </div>

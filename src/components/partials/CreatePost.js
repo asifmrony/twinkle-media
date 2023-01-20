@@ -1,12 +1,11 @@
 import { useState } from "react";
-import postShareButton from "./PostShareButton";
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/userSlice';
 import { BsCalendarDate, BsReverseLayoutTextSidebarReverse } from 'react-icons/bs'
 import { HiPhoto, HiVideoCamera } from 'react-icons/hi2'
 import { useAddPost } from "../../hooks/posts";
 import { toast, ToastContainer } from 'react-toastify'
-import PostShareButton from "./PostShareButton";
+import PostShareButtons from "./PostShareButtons";
 
 const CreatePost = () => {
     const [postInput, setPostInput] = useState('');
@@ -88,12 +87,12 @@ const CreatePost = () => {
                         onClick={sendPost}>Send</button>
                 </form>
             </div>
-            <div className="flex justify-between items-center py-1">
-                <PostShareButton icon={<HiPhoto className='h-5 text-blue-500' />} label={'Photo'} />
-                <PostShareButton icon={<HiVideoCamera className='h-5 text-green-500' />} label={'Video'} />
-                <PostShareButton icon={<BsCalendarDate className='h-5 text-orange-500' />} label={'Audio Event'} />
-                <PostShareButton icon={<BsReverseLayoutTextSidebarReverse className='h-5 text-red-700' />} label={'Write Article'} />
-            </div>
+            {/* <div className="flex justify-between items-center py-1">
+                <PostShareButtons icon={<HiPhoto className='h-5 text-blue-500' />} label={'Photo'} />
+                <PostShareButtons icon={<HiVideoCamera className='h-5 text-green-500' />} label={'Video'} />
+                <PostShareButtons icon={<BsCalendarDate className='h-5 text-orange-500' />} label={'Audio Event'} />
+                <PostShareButtons icon={<BsReverseLayoutTextSidebarReverse className='h-5 text-red-700' />} label={'Write Article'} />
+            </div> */}
         </div>
     )
 }

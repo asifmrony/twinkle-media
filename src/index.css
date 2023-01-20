@@ -51,3 +51,22 @@ code {
   border-radius: 0.5rem;
   border: 1px solid #f3f4f6;
 }
+.post-container {
+  position: relative;
+}
+.post-insider-link {
+  position: relative;
+  z-index: 1;
+}
+.post-wrap-link {
+  position: static;
+}
+.post-wrap-link::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+}

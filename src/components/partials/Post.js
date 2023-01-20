@@ -3,17 +3,14 @@ import { deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../Firebase";
 import { Menu, Transition, Dialog } from '@headlessui/react';
 import { toast, ToastContainer } from 'react-toastify';
-import { AiOutlineLike, AiTwotoneLike } from 'react-icons/ai';
-import { FaRegCommentDots } from 'react-icons/fa';
-import { TbArrowAutofitDown } from 'react-icons/tb';
 import { IoIosWarning } from 'react-icons/io';
 import { BsThreeDots } from 'react-icons/bs';
-import { HiOutlinePaperAirplane } from 'react-icons/hi2'
-import PostShareButton from "./PostShareButton";
+import PostShareButtons from "./PostShareButtons";
 import { formatDistanceToNow } from "date-fns";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../features/userSlice";
+import { useDeletePost, useUpdatePost } from "../../hooks/posts";
 
 const Post = ({ likes, userId, postId, date, message }) => {
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -22,11 +19,13 @@ const Post = ({ likes, userId, postId, date, message }) => {
     const [postToDelete, setPostToDelete] = useState(null);
     const [updatedMessage, setUpdatedMessage] = useState('');
     const [postAuthor, setPostAuthor] = useState('');
+    const { updatePost, postUpdated, isError : updateError} = useUpdatePost();
+    const { deletePost, postDeleted, isError : deleteError } = useDeletePost();
     const user = useSelector(selectUser);
 
     const likesCount = likes?.length;
     const isLiked = likes?.includes(user?.uid);
-    
+    const params = useParams();
     
     useEffect(() => {
         const getPostAuthor = async () => {
@@ -57,51 +56,48 @@ const Post = ({ likes, userId, postId, date, message }) => {
     }
 
     //Update Posts
-    const updatePost = (id) => {
-        const postDoc = doc(db, 'posts', id);
-        // Edited message as update post data
-        const newMessage = { message: updatedMessage }
-        updateDoc(postDoc, newMessage)
-            .then(() => {
-                toast('Post Updated');
-                setTimeout(() => setIsEditOpen(false), 2000);
-            })
-            .catch((err) => toast.error(err.message));
+    const handleUpdatePost = (id) => {
+        updatePost(id, updatedMessage);
+        if(postUpdated) {
+            toast.success('Post Updated');
+            setTimeout(() => setIsEditOpen(false), 2000);
+        } 
+        if(updateError) {
+            toast.error(updateError)
+        }
     }
 
 
     //Delete Posts [Modification requires]
-    const deletePost = async (id) => {
-        const postdoc = doc(db, 'posts', id);
-        await deleteDoc(postdoc)
-            .then(() => {
-                toast.error('Post has been Deleted');
-                setIsDeleteOpen(false);
-            })
-            .catch((err) => {
-                console.log(err);
-                toast('Error Deleting Post');
-            })
+    const handleDeletePost = (id) => {
+        deletePost(id);
+        if(postDeleted) {
+            toast.success('Post Deleted');
+            setTimeout(() => setIsDeleteOpen(false), 2000);
+        } 
+        if(deleteError) {
+            toast.error(deleteError)
+        }
     }
 
     return (
-        <div className="card-wrapper px-3">
+        <div className="card-wrapper post-container px-3">
             <ToastContainer />
             <div className="flex space-x-2 pt-3">
                 <div className='w-14 h-14 bg-white rounded-full p-[2px]'>
-                    <Link to={`/profile/${userId}`} >
+                    <Link to={`/profile/${userId}`} className="post-insider-link">
                         <img src={postAuthor?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
                     </Link>
                 </div>
                 <div className='text-sm flex-1 text-neutral-700'>
-                    <Link to={`/profile/${userId}`} >
+                    <Link to={`/profile/${userId}`} className="post-insider-link inline-block">
                         <h1 className='font-medium'>{postAuthor?.displayName}</h1>                    
                     </Link >
                     {/* <p className='font-light'>{designation}</p> */}
-                    <p className='text-xs font-light'>{formatDistanceToNow(date)} ago</p>
+                    <p className='text-xs font-light'>{date && formatDistanceToNow(date)} ago</p>
                 </div>
 
-                {user?.uid === userId && <Menu as="div" className="relative inline-block text-left">
+                {user?.uid === userId && <Menu as="div" className="relative inline-block text-left post-insider-link">
                     <div>
                         <Menu.Button className=''>
                             <BsThreeDots className='text-neutral-500 h-6 w-6' />
@@ -156,19 +152,11 @@ const Post = ({ likes, userId, postId, date, message }) => {
             <div className='py-3 text-sm text-neutral-700'>
                 {message}
             </div>
-            <div className='py-1 border-t border-gray-100 flex justify-between'>
-                <PostShareButton 
-                    icon={isLiked ? 
-                        <AiTwotoneLike className='h-5 w-5 text-blue-600' /> : 
-                        <AiOutlineLike className='h-5 w-5 text-slate-500' />} 
+            <PostShareButtons                      
                     label={likesCount} 
                     postId = {postId}
                     isLiked = {isLiked}
-                />
-                <PostShareButton icon={<FaRegCommentDots className='h-5 w-5 text-slate-500' />} label={'Comment'} />
-                <PostShareButton icon={<TbArrowAutofitDown className='h-5 w-5 text-slate-500' />} label={'Repost'} />
-                <PostShareButton icon={<HiOutlinePaperAirplane className='h-5 w-5 text-slate-500' />} label={'Send'} />
-            </div>
+            />
             <Transition appear show={isEditOpen} as={Fragment}>
                 <Dialog as="div" className="relative z-10" onClose={() => setIsEditOpen(false)}>
                     <Transition.Child
@@ -214,7 +202,7 @@ const Post = ({ likes, userId, postId, date, message }) => {
                                         <button
                                             type="button"
                                             className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                                            onClick={() => updatePost(postToUpdate?.id)}
+                                            onClick={() => handleUpdatePost(postToUpdate?.id)}
                                         >
                                             Update
                                         </button>
@@ -277,7 +265,7 @@ const Post = ({ likes, userId, postId, date, message }) => {
                                         <button
                                             type="button"
                                             className="inline-flex justify-center rounded-md border border-transparent bg-red-100 px-4 py-2 text-sm font-medium text-red-900 hover:bg-red-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-                                            onClick={() => deletePost(postToDelete)}
+                                            onClick={() =>  handleDeletePost(postToDelete)}
                                         >
                                             Yes, Delete it!
                                         </button>
@@ -288,6 +276,7 @@ const Post = ({ likes, userId, postId, date, message }) => {
                     </div>
                 </Dialog>
             </Transition>
+            {params.id === undefined && <Link to={`/post/${postId}`} className='post-wrap-link' />}
         </div>
     )
 }
