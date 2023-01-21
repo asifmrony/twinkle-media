@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import { selectUser } from "../../features/userSlice";
 import { useDeletePost, useUpdatePost, usePost, usePostAuthor } from "../../hooks/posts";
 import Spinner from "../../utils/Spinner";
+import { useComments } from '../../hooks/comment'
 
 const Post = ({ postId }) => {
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -22,7 +23,8 @@ const Post = ({ postId }) => {
     const {post : postDoc, isLoading: postLoading} = usePost(postId);
     const {likes, userId, message, date} = postDoc;
     const user = useSelector(selectUser);
-    const { postAuthor, authorLoading } = usePostAuthor(userId)
+    const { postAuthor, authorLoading } = usePostAuthor(userId);
+    const { allComments, commentLoading, commentFetchError } = useComments(postId)
 
     const likesCount = likes?.length;
     const isLiked = likes?.includes(user?.uid);
@@ -140,8 +142,11 @@ const Post = ({ postId }) => {
             <div className='py-3 text-sm text-neutral-700'>
                 {message}
             </div>
-            <PostShareButtons                      
-                    label={likesCount} 
+            <div className="flex justify-between py-3 px-1">
+                <p className="text-xs text-slate-500">{ likesCount > 1 ? likesCount + " likes" : likesCount == 1 ? likesCount + " like": null}</p>
+                <p className="text-xs text-slate-500">{ allComments?.length > 1 ? allComments?.length + " comments" : allComments?.length == 1 ? allComments?.length + " comment" : null }</p>
+            </div>
+            <PostShareButtons
                     postId = {postId}
                     isLiked = {isLiked}
             />

@@ -6,12 +6,14 @@ import SingleComment from "./SingleComment";
 
 const CommentList = ({ postId }) => {
     const { allComments, commentLoading, commentFetchError } = useComments(postId)
+    console.log(allComments);
+    console.log(commentFetchError)
 
-    if(commentLoading) return (
-        <div className="flex justify-center items-center">
-            <Spinner classList={'w-6 h-6'} />
-        </div>
-    )
+    // if(commentLoading) return (
+    //     <div className="flex justify-center items-center">
+    //         <Spinner classList={'w-6 h-6'} />
+    //     </div>
+    // )
     if(commentFetchError) return "Error Loading Comments"
 
     return (

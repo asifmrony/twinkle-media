@@ -7,7 +7,7 @@ import { FaRegCommentDots } from 'react-icons/fa';
 import { TbArrowAutofitDown } from 'react-icons/tb';
 import { HiOutlinePaperAirplane } from 'react-icons/hi2';
 
-const PostShareButtons = ({ label, postId, isLiked }) => {
+const PostShareButtons = ({ postId, isLiked }) => {
   const user = useSelector(selectUser);
   const { toggleLike, isLoading: likeLoading } = useToggleLike({ postId, isLiked, uid: user?.uid })
 
@@ -24,7 +24,7 @@ const PostShareButtons = ({ label, postId, isLiked }) => {
         {isLiked ?
           <AiTwotoneLike className='h-5 w-5 text-blue-600' /> :
           <AiOutlineLike className='h-5 w-5 text-slate-500' />}
-        <p className='text-sm font-medium text-neutral-500'>{label}</p>
+        <p className={`${isLiked ? 'text-blue-600' : 'text-neutral-500' } text-sm font-medium`}>Like</p>
       </button>
       <button
         className='flex cursor-pointer items-center space-x-2 py-3 px-1 hover:bg-gray-100 rounded-md post-insider-link'

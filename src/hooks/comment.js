@@ -50,7 +50,6 @@ export function useComments(postId) {
                         }
                     }))
                 } else {
-                    setCommentFetchError(true)
                     setCommentLoading(false)
                 }
             })
