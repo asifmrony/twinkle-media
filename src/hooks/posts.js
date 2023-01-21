@@ -1,5 +1,5 @@
 import { uuidv4 } from "@firebase/util";
-import { arrayRemove, arrayUnion, deleteDoc, doc, getDoc, onSnapshot, query, setDoc, updateDoc } from "firebase/firestore";
+import { arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, setDoc, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../Firebase";
 
@@ -47,6 +47,54 @@ export function useToggleLike({postId, isLiked, uid}) {
 }
 
 //TO-DO: Custom hook for loading all posts
+export function useAllPosts() {
+    const [allPosts, setAllPosts] = useState([]);
+    const [feedLoading, setFeedLoading] = useState(true)
+    const [feedError, setFeedError] = useState(null)
+    const postsRef = collection(db, 'posts');
+
+    useEffect(() => {
+        // const getPosts = async () => {
+        //   const q = query(postsRef, orderBy('timestamp', 'desc'));
+        //   const querySnapshot = await getDocs(q);
+        //   setPosts(querySnapshot.docs.map((doc) => {
+        //     console.log(doc.data());
+        //     return {...doc.data(), id: doc.id};
+        //   }));
+        // }
+    
+        // getPosts();
+    
+        const subscribe = () => {
+          /**
+           * TO-DO: posts sorting order
+           * query(), orderBy() dont work with realtime onSnapshot listener
+           * Find a workaround for this one below ->
+           * const q = query(postsRef, orderBy('timestamp', 'desc'));
+           */
+          const q = query(postsRef, orderBy('date', 'desc'));
+          onSnapshot(q, (snapshot) => {
+            if(snapshot.size) {
+              setFeedLoading(false);
+              setAllPosts(snapshot.docs.map((doc) => {
+                return {
+                  ...doc.data(),
+                  id: doc.id
+                }
+              }))
+            } else {
+              setFeedLoading(false)
+            }
+          })
+        }
+        subscribe();
+        return () => {
+          subscribe()
+        }
+      }, [])
+
+      return { allPosts, feedLoading, feedError }
+}
 
 // Loads single post
 export function usePost(id) {

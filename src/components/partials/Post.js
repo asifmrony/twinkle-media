@@ -11,6 +11,7 @@ import { Link, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../features/userSlice";
 import { useDeletePost, useUpdatePost, usePost, usePostAuthor } from "../../hooks/posts";
+import Spinner from "../../utils/Spinner";
 
 const Post = ({ postId }) => {
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -30,16 +31,6 @@ const Post = ({ postId }) => {
 
     const openModal = async (id) => {
         setIsEditOpen(true);
-        // const docRef = doc(db, "posts", id)
-        // const docSnap = await getDoc(docRef);
-
-        // if (docSnap.exists()) {
-        //     setPostToUpdate({ ...docSnap.data(), id: id });
-        //     setUpdatedMessage(docSnap.data().message);
-        // } else {
-        //     // doc.data() will be undefined in this case
-        //     console.log("No such document!");
-        // }
         if(postDoc) {
             setUpdatedMessage(postDoc?.message);
         } else {
@@ -71,6 +62,12 @@ const Post = ({ postId }) => {
             toast.error(deleteError)
         }
     }
+
+    if (postLoading) return (
+        <div className='min-h-screen flex items-center justify-center'>
+            <Spinner classList={'w-8 h-8'} />
+        </div>
+    )
 
     return (
         <div className="card-wrapper post-container px-3">

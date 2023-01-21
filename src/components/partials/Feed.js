@@ -6,6 +6,7 @@ import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
 import Post from './Post';
 import CreatePost from './CreatePost';
 import Spinner from '../../utils/Spinner';
+import { useAllPosts } from '../../hooks/posts';
 
 /**
  * Firestore Lite SDK does not support listeners. 
@@ -15,57 +16,9 @@ import Spinner from '../../utils/Spinner';
 */
 
 const Feed = () => {
-  const [posts, setPosts] = useState([]);
-  const [feedLoading, setFeedLoading] = useState(true);
-  const postsRef = collection(db, 'posts');
+  const { allPosts, feedLoading, error } = useAllPosts()
 
-  console.log(posts);
-
-  useEffect(() => {
-    // const getPosts = async () => {
-    //   const q = query(postsRef, orderBy('timestamp', 'desc'));
-    //   const querySnapshot = await getDocs(q);
-    //   setPosts(querySnapshot.docs.map((doc) => {
-    //     console.log(doc.data());
-    //     return {...doc.data(), id: doc.id};
-    //   }));
-    // }
-
-    // getPosts();
-
-    const subscribe = () => {
-      /**
-       * TO-DO: posts sorting order
-       * query(), orderBy() dont work with realtime onSnapshot listener
-       * Find a workaround for this one below ->
-       * const q = query(postsRef, orderBy('timestamp', 'desc'));
-       */
-      const q = query(postsRef, orderBy('date', 'desc'));
-      onSnapshot(q, (snapshot) => {
-        if(snapshot.size) {
-          setFeedLoading(false);
-          setPosts(snapshot.docs.map((doc) => {
-            return {
-              ...doc.data(),
-              id: doc.id
-            }
-          }))
-        } else {
-          setFeedLoading(false)
-        }
-      })
-    }
-    subscribe();
-    return () => {
-      subscribe()
-    }
-  }, [])
-
-  const convertToReadableTime = (time) => {
-    const timeInMinutes = time / 60;
-    const timeInHours = timeInMinutes / 60;
-    return `${timeInHours} : ${timeInMinutes}`
-  }
+  console.log(allPosts);
   
   return (
     <div className='col-span-5'>
@@ -76,7 +29,7 @@ const Feed = () => {
           <Spinner classList={'w-6 h-6'} />
         </section> : null}
         {/* Post in Feed */}
-        {posts.map(({ likes, userId, id, message, date }) => (
+        {allPosts.map(({ likes, userId, id, message, date }) => (
           <Post key={id} postId={id} />
         ))}
         {/* <div className="card-wrapper px-3">
