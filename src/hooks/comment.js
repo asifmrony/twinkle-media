@@ -1,5 +1,5 @@
 import { uuidv4 } from "@firebase/util";
-import { collection, doc, onSnapshot, query, setDoc, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { db } from "../Firebase";
@@ -58,4 +58,24 @@ export function useComments(postId) {
     }, [])
 
     return { allComments, commentLoading, commentFetchError }
+}
+
+export function useDeleteComment(id) {
+    const [deleteLoading, setDeleteLoading] = useState(false)
+
+    function deleteComment() {
+        console.log(id);
+        const commentDoc = doc(db, 'comments', id);
+        setDeleteLoading(true)
+        deleteDoc(commentDoc)
+            .then(() => {
+                setDeleteLoading(false);
+                toast.success("Comment Deleted");
+            })
+            .catch((err) => {
+                toast.err("Error Deleting comment");
+            });
+    }
+
+    return {deleteComment, deleteLoading};
 }

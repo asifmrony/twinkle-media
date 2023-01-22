@@ -6,8 +6,6 @@ import SingleComment from "./SingleComment";
 
 const CommentList = ({ postId }) => {
     const { allComments, commentLoading, commentFetchError } = useComments(postId)
-    console.log(allComments);
-    console.log(commentFetchError)
 
     // if(commentLoading) return (
     //     <div className="flex justify-center items-center">
@@ -20,7 +18,7 @@ const CommentList = ({ postId }) => {
         <div className='space-y-4 px-2'>
             {
                 allComments.map(({ id, userId, date, message }) => (
-                    <SingleComment key={id} userId={userId} date={date} message={message} />
+                    <SingleComment key={id} id={id} userId={userId} date={date} message={message} />
                 ))
             }
         </div>

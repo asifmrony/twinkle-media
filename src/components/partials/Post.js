@@ -20,7 +20,7 @@ const Post = ({ postId }) => {
     const [updatedMessage, setUpdatedMessage] = useState('');
     const { updatePost, postUpdated, isError : updateError} = useUpdatePost();
     const { deletePost, postDeleted, isError : deleteError } = useDeletePost();
-    const {post : postDoc, isLoading: postLoading} = usePost(postId);
+    const {post : postDoc, isLoading: postLoading } = usePost(postId);
     const {likes, userId, message, date} = postDoc;
     const user = useSelector(selectUser);
     const { postAuthor, authorLoading } = usePostAuthor(userId);
@@ -29,6 +29,7 @@ const Post = ({ postId }) => {
     const likesCount = likes?.length;
     const isLiked = likes?.includes(user?.uid);
     const params = useParams();
+    // console.log(params);
     
 
     const openModal = async (id) => {
@@ -63,7 +64,7 @@ const Post = ({ postId }) => {
         if(deleteError) {
             toast.error(deleteError)
         }
-    }
+    }    
 
     if (postLoading) return (
         <div className='min-h-screen flex items-center justify-center'>

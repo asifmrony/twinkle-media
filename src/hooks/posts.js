@@ -100,6 +100,7 @@ export function useAllPosts() {
 export function usePost(id) {
     const [post, setPost] = useState({});
     const [postLoading, setPostLoading] = useState(true);
+    const [notFound, setNotFound] = useState(false);
     const docRef = doc(db, "posts", id);
 
     useEffect(() => {
@@ -109,7 +110,7 @@ export function usePost(id) {
                 if (doc.exists()) {
                     setPost(doc.data());
                 } else {
-                    console.log("Post not found");
+                    setNotFound(true)
                 }
             })
             setPostLoading(false);
@@ -117,7 +118,7 @@ export function usePost(id) {
         getPost();
     }, [])
 
-    return {post, postLoading};
+    return {post, postLoading, notFound};
 }
 
 //Edits single post
