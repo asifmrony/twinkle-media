@@ -140,7 +140,7 @@ const Post = ({ postId }) => {
                     </Transition>
                 </Menu>}
             </div>
-            <div className='py-3 text-sm text-neutral-700'>
+            <div className='py-3 px-1 text-sm text-neutral-700'>
                 {message}
             </div>
             <div className="flex justify-between py-3 px-1">

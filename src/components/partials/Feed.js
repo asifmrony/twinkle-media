@@ -21,7 +21,7 @@ const Feed = () => {
   console.log(allPosts);
   
   return (
-    <div className='col-span-5'>
+    <div className='col-span-6'>
       <div className="feed space-y-2">
         <CreatePost />
 
