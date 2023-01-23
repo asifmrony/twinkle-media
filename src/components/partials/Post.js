@@ -10,9 +10,10 @@ import { formatDistanceToNow } from "date-fns";
 import { Link, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../features/userSlice";
-import { useDeletePost, useUpdatePost, usePost, usePostAuthor } from "../../hooks/posts";
+import { useDeletePost, useUpdatePost, usePost } from "../../hooks/posts";
 import Spinner from "../../utils/Spinner";
 import { useComments } from '../../hooks/comment'
+import { usePostAuthor } from "../../hooks/author";
 
 const Post = ({ postId }) => {
     const [isEditOpen, setIsEditOpen] = useState(false);

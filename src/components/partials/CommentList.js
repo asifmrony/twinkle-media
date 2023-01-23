@@ -1,6 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
 import { useComments } from "../../hooks/comment"
-import { usePostAuthor } from "../../hooks/posts";
 import Spinner from "../../utils/Spinner";
 import SingleComment from "./SingleComment";
 

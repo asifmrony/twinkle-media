@@ -162,26 +162,3 @@ export function useDeletePost() {
 
     return {deletePost, postDeleted, isError}
 }
-
-// Loads Post Author: passing in Post Id
-export function usePostAuthor(id) {
-    const [postAuthor, setPostAuthor] = useState({})
-    const [authorLoading, setAuthorLoading] = useState(false)
-
-    useEffect(() => {
-        const getPostAuthor = async () => {
-            setAuthorLoading(true);
-            const docSnap = await getDoc(doc(db, "users", id))
-            if(docSnap.exists()) {
-                setPostAuthor(docSnap.data());
-            } else {
-                console.log('No Post Author Found');
-            }
-            setAuthorLoading(false);
-        }
-        getPostAuthor()
-      
-    }, [id])
-
-    return { postAuthor, authorLoading }
-}

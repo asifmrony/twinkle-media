@@ -3,8 +3,8 @@ import { FaTrash } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { selectUser } from '../../features/userSlice';
+import { usePostAuthor } from '../../hooks/author';
 import { useDeleteComment } from '../../hooks/comment';
-import { usePostAuthor } from '../../hooks/posts';
 
 const SingleComment = ({ id, userId, date, message }) => {
     const { postAuthor, authorLoading } = usePostAuthor(userId);
