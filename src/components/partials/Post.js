@@ -1,6 +1,4 @@
 import { Fragment, useEffect, useState } from "react";
-import { deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../../Firebase";
 import { Menu, Transition, Dialog } from '@headlessui/react';
 import { toast, ToastContainer } from 'react-toastify';
 import { IoIosWarning } from 'react-icons/io';

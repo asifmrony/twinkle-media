@@ -32,7 +32,6 @@ export function useAddPost() {
 
 export function useToggleLike({postId, isLiked, uid}) {
     const [isLoading, setLoading] = useState(false);
-    console.log(postId, isLiked, uid);
 
     async function toggleLike() {
         setLoading(false);
@@ -46,7 +45,7 @@ export function useToggleLike({postId, isLiked, uid}) {
     return { toggleLike, isLoading }
 }
 
-//TO-DO: Custom hook for loading all posts
+// Custom hook for loading all posts
 export function useAllPosts() {
     const [allPosts, setAllPosts] = useState([]);
     const [feedLoading, setFeedLoading] = useState(true)
