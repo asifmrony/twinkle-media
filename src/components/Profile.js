@@ -5,7 +5,7 @@ import Widgets from "./partials/Widgets"
 import Feed from "./partials/Feed"
 import { useAuthorPosts, usePostAuthor, useUpdateAuthor } from "../hooks/author"
 import Spinner from "../utils/Spinner"
-import { Fragment, useState, useEffect } from "react"
+import { Fragment, useState, useEffect, useRef } from "react"
 import { Dialog, Transition } from "@headlessui/react"
 import { IoMdCloseCircleOutline, IoMdDoneAll } from "react-icons/io"
 import { toast } from "react-toastify"
@@ -13,6 +13,9 @@ import CreatePost from "./partials/CreatePost"
 import Post from "./partials/Post"
 import { useDispatch, useSelector } from "react-redux"
 import { login, selectUser } from "../features/userSlice"
+import { TbEdit } from "react-icons/tb"
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage"
+import { storage } from "../Firebase"
 
 const Profile = () => {
   const [bioEdit, setBioEdit] = useState(false);
@@ -34,9 +37,11 @@ const Profile = () => {
   const { allPosts, feedLoading, feedError } = useAuthorPosts(id);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
+  const fileInputRef = useRef(null);
+  const [progressPercent, setProgressPercent] = useState(0);
 
   useEffect(() => {
-    if (postAuthor?.bio) {
+    if (postAuthor) {
       setAuthorInfo({
         ...authorInfo,
         name: postAuthor?.displayName,
@@ -87,13 +92,60 @@ const Profile = () => {
       displayName: authorInfo.name,
       designation: authorInfo.designation
     });
-    if(authorUpdated) {
+    if (authorUpdated) {
       dispatch(login({
-        
+        email: user.email,
+        uid: user.uid,
         displayName: authorInfo.name,
-    }))
+        photoURL: user.photoURL
+      }))
       toast.success("Headline info updated", { theme: 'colored' });
-    } 
+      setEditHeadline(false);
+    }
+  }
+
+  const handleFileUpload = (e) => {
+    const file = e.target?.files[0];
+    const storageRef = ref(storage, `profile-images/${file.name}`)
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setProgressPercent(progress);
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+          case 'paused':
+            console.log('Upload is paused');
+            break;
+          case 'running':
+            console.log('Upload is running');
+            break;
+        }
+      },
+      (error) => {
+        // Handle unsuccessful uploads
+        toast.error('Error uploading Profile photo, Try Again!', {theme: "colored"});
+      },
+      () => {
+        // Handle successful uploads on complete
+        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          console.log('File available at', downloadURL);
+          updateAuthor({
+            photoURL: downloadURL
+          })
+          dispatch(login({
+            email: user.email,
+            uid: user.uid,
+            displayName: user.displayName,
+            photoURL: downloadURL
+          }))
+        });
+      }
+    );
   }
 
   if (authorLoading) return (
@@ -116,12 +168,21 @@ const Profile = () => {
               </div>
               <div className="profile__about-info px-4 pt-4 pb-2">
                 <div className="flex justify-between">
-                  <div className="w-36 h-36 rounded-full p-1 bg-white -mt-16">
+                  <div className="w-36 h-36 rounded-full p-1 bg-white -mt-16 relative">
                     <img className="h-full w-full rounded-full" src={postAuthor?.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} alt="" />
+                    <input type="file" accept="image/*" className="hidden" ref={fileInputRef} name="fileInput" id="profilePicButton" onChange={handleFileUpload} />
+                    <label htmlFor="profilePicButton">
+                      <button type="button"
+                        className="bg-white p-1 hover:bg-gray-200 rounded-full absolute right-2.5 top-2.5"
+                        onClick={e => fileInputRef.current && fileInputRef.current.click()}
+                      >
+                        <TbEdit className="h-5 w-5" />
+                      </button>
+                    </label>
                   </div>
                   <div className="flex-1 pl-3">
                     <h1 className="text-xl font-bold">{postAuthor?.displayName}</h1>
-                    <p className="text-slate-600">Founder of Google Russia</p>
+                    <p className="text-slate-600">{postAuthor?.designation}</p>
                     {id === user.uid && <button
                       className="text-blue-600 text-sm hover:underline"
                       onClick={() => setEditHeadline(true)}
@@ -169,7 +230,7 @@ const Profile = () => {
                                     type="text"
                                     id="name"
                                     value={authorInfo.name}
-                                    onChange={(e) => setAuthorInfo({ ...authorInfo, name: e.target.value})}
+                                    onChange={(e) => setAuthorInfo({ ...authorInfo, name: e.target.value })}
                                     className="text-sm text-gray-500 w-full p-2 border border-gray-200 rounded-md focus:outline-none"
                                   />
                                 </div>
@@ -179,7 +240,7 @@ const Profile = () => {
                                     type="text"
                                     id="designation"
                                     value={authorInfo.designation}
-                                    onChange={(e) => setAuthorInfo({ ...authorInfo, designation: e.target.value})}
+                                    onChange={(e) => setAuthorInfo({ ...authorInfo, designation: e.target.value })}
                                     className="text-sm text-gray-500 w-full p-2 border border-gray-200 rounded-md focus:outline-none"
                                   />
                                 </div>
