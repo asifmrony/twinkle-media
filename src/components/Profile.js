@@ -15,7 +15,8 @@ import { useDispatch, useSelector } from "react-redux"
 import { login, selectUser } from "../features/userSlice"
 import { TbEdit } from "react-icons/tb"
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage"
-import { storage } from "../Firebase"
+import { auth, storage } from "../Firebase"
+import { updateProfile } from "firebase/auth"
 
 const Profile = () => {
   const [bioEdit, setBioEdit] = useState(false);
@@ -92,6 +93,9 @@ const Profile = () => {
       displayName: authorInfo.name,
       designation: authorInfo.designation
     });
+    updateProfile(auth.currentUser, {
+      displayName: authorInfo.name
+    })
     if (authorUpdated) {
       dispatch(login({
         email: user.email,
@@ -127,7 +131,7 @@ const Profile = () => {
       },
       (error) => {
         // Handle unsuccessful uploads
-        toast.error('Error uploading Profile photo, Try Again!', {theme: "colored"});
+        toast.error('Error uploading Profile photo, Try Again!', { theme: "colored" });
       },
       () => {
         // Handle successful uploads on complete
@@ -137,6 +141,9 @@ const Profile = () => {
           updateAuthor({
             photoURL: downloadURL
           })
+          updateProfile(auth.currentUser, {
+            photoURL: downloadURL
+          })
           dispatch(login({
             email: user.email,
             uid: user.uid,
@@ -144,6 +151,7 @@ const Profile = () => {
             photoURL: downloadURL
           }))
         });
+        toast.success("Profile Photo Uploaded.", { theme: "colored" })
       }
     );
   }
@@ -179,6 +187,14 @@ const Profile = () => {
                         <TbEdit className="h-5 w-5" />
                       </button>
                     </label>
+
+                    {progressPercent > 0 && <div className="w-full bg-gray-200 rounded-full dark:bg-gray-700 mt-1">
+                      <div
+                        style={{ width: progressPercent }}
+                        className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full">{progressPercent}</div>
+                      </div>
+                    }
+
                   </div>
                   <div className="flex-1 pl-3">
                     <h1 className="text-xl font-bold">{postAuthor?.displayName}</h1>
