@@ -5,7 +5,7 @@ import { IoIosWarning } from 'react-icons/io';
 import { BsThreeDots } from 'react-icons/bs';
 import PostShareButtons from "./PostShareButtons";
 import { formatDistanceToNow } from "date-fns";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../features/userSlice";
 import { useDeletePost, useUpdatePost, usePost } from "../../hooks/posts";
@@ -17,10 +17,10 @@ const Post = ({ postId }) => {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [updatedMessage, setUpdatedMessage] = useState('');
-    const { updatePost, postUpdated, isError : updateError} = useUpdatePost();
-    const { deletePost, postDeleted, isError : deleteError } = useDeletePost();
-    const {post : postDoc, isLoading: postLoading } = usePost(postId);
-    const {likes, userId, message, date} = postDoc;
+    const { updatePost, postUpdated, isError: updateError } = useUpdatePost();
+    const { deletePost, postDeleted, isError: deleteError } = useDeletePost();
+    const { post: postDoc, isLoading: postLoading } = usePost(postId);
+    const { likes, userId, message, date } = postDoc;
     const user = useSelector(selectUser);
     const { postAuthor, authorLoading } = usePostAuthor(userId);
     const { allComments, commentLoading, commentFetchError } = useComments(postId)
@@ -28,12 +28,12 @@ const Post = ({ postId }) => {
     const likesCount = likes?.length;
     const isLiked = likes?.includes(user?.uid);
     const params = useParams();
-    // console.log(params);
-    
+    const navigate = useNavigate();
+
 
     const openModal = async (id) => {
         setIsEditOpen(true);
-        if(postDoc) {
+        if (postDoc) {
             setUpdatedMessage(postDoc?.message);
         } else {
             console.log("Could't get any post");
@@ -43,11 +43,11 @@ const Post = ({ postId }) => {
     //Update Posts
     const handleUpdatePost = (id) => {
         updatePost(id, updatedMessage);
-        if(postUpdated) {
+        if (postUpdated) {
             toast.success('Post Updated');
             setTimeout(() => setIsEditOpen(false), 2000);
-        } 
-        if(updateError) {
+        }
+        if (updateError) {
             toast.error(updateError)
         }
     }
@@ -56,14 +56,14 @@ const Post = ({ postId }) => {
     //Delete Posts [Modification requires]
     const handleDeletePost = (id) => {
         deletePost(id);
-        if(postDeleted) {
+        if (postDeleted) {
             toast.success('Post Deleted');
             setTimeout(() => setIsDeleteOpen(false), 2000);
-        } 
-        if(deleteError) {
+        }
+        if (deleteError) {
             toast.error(deleteError)
         }
-    }    
+    }
 
     if (postLoading) return (
         <div className='min-h-screen flex items-center justify-center'>
@@ -82,7 +82,7 @@ const Post = ({ postId }) => {
                 </div>
                 <div className='text-sm flex-1 text-neutral-700'>
                     <Link to={`/profile/${userId}`} className="post-insider-link inline-block">
-                        <h1 className='font-medium'>{postAuthor?.displayName}</h1>                    
+                        <h1 className='font-medium'>{postAuthor?.displayName}</h1>
                     </Link >
                     {/* <p className='font-light'>{designation}</p> */}
                     <p className='text-xs font-light'>{date && formatDistanceToNow(date)} ago</p>
@@ -105,6 +105,20 @@ const Post = ({ postId }) => {
                     >
                         <Menu.Items className="absolute right-0 mt-0 w-[8rem] origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
 
+                            <div className="px-1 pt-1">
+                                <Menu.Item>
+                                    {({ active }) => (
+                                        <button
+                                            onClick={() => navigate(`/post/${postId}`)}
+                                            type='button'
+                                            className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'
+                                                } group flex w-full items-center rounded-md px-2 py-1 text-sm`}
+                                        >
+                                            Go to post page
+                                        </button>
+                                    )}
+                                </Menu.Item>
+                            </div>
                             <div className="px-1 pt-1">
                                 <Menu.Item>
                                     {({ active }) => (
@@ -143,12 +157,12 @@ const Post = ({ postId }) => {
                 {message}
             </div>
             <div className="flex justify-between py-3 px-1">
-                <p className="text-xs text-slate-500">{ likesCount > 1 ? likesCount + " likes" : likesCount == 1 ? likesCount + " like": null}</p>
-                <p className="text-xs text-slate-500">{ allComments?.length > 1 ? allComments?.length + " comments" : allComments?.length == 1 ? allComments?.length + " comment" : null }</p>
+                <p className="text-xs text-slate-500">{likesCount > 1 ? likesCount + " likes" : likesCount == 1 ? likesCount + " like" : null}</p>
+                <p className="text-xs text-slate-500">{allComments?.length > 1 ? allComments?.length + " comments" : allComments?.length == 1 ? allComments?.length + " comment" : null}</p>
             </div>
             <PostShareButtons
-                    postId = {postId}
-                    isLiked = {isLiked}
+                postId={postId}
+                isLiked={isLiked}
             />
             <Transition appear show={isEditOpen} as={Fragment}>
                 <Dialog as="div" className="relative z-10" onClose={() => setIsEditOpen(false)}>
@@ -257,7 +271,7 @@ const Post = ({ postId }) => {
                                         <button
                                             type="button"
                                             className="inline-flex justify-center rounded-md border border-transparent bg-red-100 px-4 py-2 text-sm font-medium text-red-900 hover:bg-red-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-                                            onClick={() =>  handleDeletePost(postId)}
+                                            onClick={() => handleDeletePost(postId)}
                                         >
                                             Yes, Delete it!
                                         </button>

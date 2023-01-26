@@ -61,7 +61,7 @@ const CreatePost = () => {
     }
 
     return (
-        <div className="card-wrapper px-3 pt-3">
+        <div className="card-wrapper px-3 py-3">
             <ToastContainer />
             <div className="flex items-center space-x-3">
                 <div className='w-14 h-14 bg-white rounded-full p-[2px]'>
@@ -76,11 +76,11 @@ const CreatePost = () => {
         placeholder:font-semibold border outline-1 outline-transparent border-neutral-500 placeholder:text-sm
          focus:border-blue-500 focus:border-2'
                         placeholder='Start a post' />
-                    <input
+                    {/* <input
                         type="file"
                         name="photoShare"
                         onChange={(e) => setFile(e.target.files[0])}
-                        id="photoShare" />
+                        id="photoShare" /> */}
                     <button
                         type="submit"
                         className='border border-nutral-500 p-3 hidden'

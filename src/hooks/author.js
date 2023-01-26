@@ -13,12 +13,20 @@ export function usePostAuthor(id) {
         const getPostAuthor = async () => {
             setAuthorLoading(true);
             try {
-                const docSnap = await getDoc(doc(db, "users", id))
-                if (docSnap.exists()) {
-                    setPostAuthor(docSnap.data());
-                } else {
-                    console.log('No Post Author Found');
-                }
+                // const docSnap = await getDoc(doc(db, "users", id))
+                // if (docSnap.exists()) {
+                //     setPostAuthor(docSnap.data());
+                // } else {
+                //     console.log('No Post Author Found');
+                // }
+                const authorRef = doc(db, "users", id);
+                onSnapshot(authorRef, (doc) => {
+                  if(doc.exists()) {
+                    setPostAuthor(doc.data());
+                  } else {
+                    console.log("No Post Author Found")
+                  }
+                })
             } catch (error) {
                 setAuthorLoading(false);
                 setError(error);

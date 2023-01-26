@@ -188,11 +188,11 @@ const Profile = () => {
                       </button>
                     </label>
 
-                    {progressPercent > 0 && <div className="w-full bg-gray-200 rounded-full dark:bg-gray-700 mt-1">
+                    {progressPercent === 0 ? null : progressPercent > 0 && progressPercent < 99 ? <div className="w-full bg-gray-200 rounded-full dark:bg-gray-700 mt-1">
                       <div
                         style={{ width: progressPercent }}
-                        className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full">{progressPercent}</div>
-                      </div>
+                        className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full">{progressPercent}%</div>
+                      </div> : <div className="text-blue-600 font-semibold flex space-x-1 text-sm mt-1"><IoMdDoneAll className="h-5 w-5" /><span>Upload Complete</span></div>
                     }
 
                   </div>
