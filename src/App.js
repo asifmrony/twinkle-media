@@ -11,6 +11,7 @@ import Signup from './components/Signup';
 import ResetPassword from './components/ResetPassword';
 import Profile from './components/Profile';
 import PostDetails from './components/PostDetails';
+import Network from './components/Network';
 
 function App() {
 
@@ -29,6 +30,7 @@ function App() {
             />
             <Route path='/profile/:id' element={<Profile />}/>
             <Route path='/post/:id' element={<PostDetails />}/>
+            <Route path='/network' element={<Network />} />
             <Route path='/login' element={<Login />} />
             <Route path='/signup' element={<Signup />} />
             <Route path='/reset-password' element={<ResetPassword />} />

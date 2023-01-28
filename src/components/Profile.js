@@ -17,6 +17,7 @@ import { TbEdit } from "react-icons/tb"
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage"
 import { auth, storage } from "../Firebase"
 import { updateProfile } from "firebase/auth"
+import { format } from "date-fns"
 
 const Profile = () => {
   const [bioEdit, setBioEdit] = useState(false);
@@ -40,6 +41,7 @@ const Profile = () => {
   const dispatch = useDispatch();
   const fileInputRef = useRef(null);
   const [progressPercent, setProgressPercent] = useState(0);
+  console.log(postAuthor);
 
   useEffect(() => {
     if (postAuthor) {
@@ -50,7 +52,8 @@ const Profile = () => {
         bio: postAuthor?.bio,
         phone: postAuthor?.phone,
         email: postAuthor?.email,
-        address: postAuthor?.address
+        address: postAuthor?.address,
+        date: postAuthor?.date
       });
     }
   }, [postAuthor])
@@ -178,21 +181,24 @@ const Profile = () => {
                 <div className="flex justify-between">
                   <div className="w-36 h-36 rounded-full p-1 bg-white -mt-16 relative">
                     <img className="h-full w-full rounded-full" src={postAuthor?.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} alt="" />
-                    <input type="file" accept="image/*" className="hidden" ref={fileInputRef} name="fileInput" id="profilePicButton" onChange={handleFileUpload} />
-                    <label htmlFor="profilePicButton">
-                      <button type="button"
-                        className="bg-white p-1 hover:bg-gray-200 rounded-full absolute right-2.5 top-2.5"
-                        onClick={e => fileInputRef.current && fileInputRef.current.click()}
-                      >
-                        <TbEdit className="h-5 w-5" />
-                      </button>
-                    </label>
+                    {id === user.uid &&
+                      <>
+                        <input type="file" accept="image/*" className="hidden" ref={fileInputRef} name="fileInput" id="profilePicButton" onChange={handleFileUpload} />
+                        <label htmlFor="profilePicButton">
+                          <button type="button"
+                            className="bg-white p-1 hover:bg-gray-200 rounded-full absolute right-2.5 top-2.5"
+                            onClick={e => fileInputRef.current && fileInputRef.current.click()}
+                          >
+                            <TbEdit className="h-5 w-5" />
+                          </button>
+                        </label>
+                      </>}
 
                     {progressPercent === 0 ? null : progressPercent > 0 && progressPercent < 99 ? <div className="w-full bg-gray-200 rounded-full dark:bg-gray-700 mt-1">
                       <div
                         style={{ width: progressPercent }}
                         className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full">{progressPercent}%</div>
-                      </div> : <div className="text-blue-600 font-semibold flex space-x-1 text-sm mt-1"><IoMdDoneAll className="h-5 w-5" /><span>Upload Complete</span></div>
+                    </div> : <div className="text-blue-600 font-semibold flex space-x-1 text-sm mt-1"><IoMdDoneAll className="h-5 w-5" /><span>Upload Complete</span></div>
                     }
 
                   </div>
@@ -277,8 +283,9 @@ const Profile = () => {
                       </div>
                     </Dialog>
                   </Transition>
-                  <div>
-                    <button type="button" className="w-28 h-10 rounded-full text-white font-semibold bg-blue-600">Message</button>
+                  <div className="text-right space-y-1">
+                    <p className="text-slate-600">Joined on {authorInfo.date && format(authorInfo.date, 'MMMM YYY')}</p>
+                    <button type="button" className="w-24 h-9 text-sm rounded-full text-white font-semibold bg-blue-600">Message</button>
                   </div>
                 </div>
               </div>
