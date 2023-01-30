@@ -7,7 +7,8 @@ import { auth } from '../../Firebase';
 import useAuth from './useAuth';
 
 function RequireAuth({ children }) {
-    const currentUser = useAuth();
+    // const currentUser = useAuth();
+    const currentUser = useSelector(selectUser);
     
     if (!currentUser) {
         return <Navigate to={'/login'} />
