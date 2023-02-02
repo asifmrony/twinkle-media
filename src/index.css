@@ -70,3 +70,11 @@ code {
   width: 100%;
   z-index: 0;
 }
+
+#error-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}

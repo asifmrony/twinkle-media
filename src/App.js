@@ -12,6 +12,8 @@ import ResetPassword from './components/ResetPassword';
 import Profile from './components/Profile';
 import PostDetails from './components/PostDetails';
 import Network from './components/Network';
+import Chat from './components/Chat';
+import ErrorPage from './utils/error-page';
 
 function App() {
 
@@ -28,6 +30,8 @@ function App() {
             <Route path='/login' element={<Login />} />
             <Route path='/signup' element={<Signup />} />
             <Route path='/reset-password' element={<ResetPassword />} />
+            <Route path='/chat' element={<Chat />} />
+            <Route path='*' element={<ErrorPage />}/>
           </Routes>
         </div>
       </>
