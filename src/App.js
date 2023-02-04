@@ -23,15 +23,15 @@ function App() {
         <div className="App bg-[#F3F2EF] min-h-screen">
           <Routes>
             <Route path='/' element={<RequireAuth><Home /></RequireAuth>} />
-              {/* <Route index element={} /> */}
-              <Route path='profile/:id' element={<RequireAuth><Profile /></RequireAuth>} />
-              <Route path='post/:id' element={<RequireAuth><PostDetails /></RequireAuth>} />
-              <Route path='network' element={<RequireAuth><Network /></RequireAuth>} />
-            <Route path='/login' element={<Login />} />
-            <Route path='/signup' element={<Signup />} />
-            <Route path='/reset-password' element={<ResetPassword />} />
-            <Route path='/chat' element={<Chat />} />
-            <Route path='*' element={<ErrorPage />}/>
+            {/* <Route index element={} /> */}
+            <Route path='profile/:id' element={<RequireAuth><Profile /></RequireAuth>} />
+            <Route path='post/:id' element={<RequireAuth><PostDetails /></RequireAuth>} />
+            <Route path='network' element={<RequireAuth><Network /></RequireAuth>} />
+            <Route path='login' element={<Login />} />
+            <Route path='signup' element={<Signup />} />
+            <Route path='reset-password' element={<ResetPassword />} />
+            <Route path='chat' element={<RequireAuth><Chat /></RequireAuth>} />
+            <Route path='*' element={<ErrorPage />} />
           </Routes>
         </div>
       </>
