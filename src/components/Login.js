@@ -43,8 +43,9 @@ function Login() {
                     toast.error('User not found', {theme: 'colored'})
                 } else if (err.code == 'auth/wrong-password') {
                     toast.error('Wrong Password', {theme: 'colored'})
-                }
-                else {
+                } else if (err.code == 'auth/network-request-failed') {
+                    toast.error('No Internet Connect. Try connecting..', {theme: 'colored'})
+                } else {
                     toast.error(err.code, {theme: 'colored'})
                 }
             });

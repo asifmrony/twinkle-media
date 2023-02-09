@@ -32,15 +32,19 @@ function Signup() {
         }
         createUserWithEmailAndPassword(auth, userData.email, userData.password)
             .then((userInfo) => {
-                // Signed in 
+                // Signed in
+                // Create UserChats collection 
+                setDoc(doc(db, "userChats", userInfo.user.uid), {})
+                // Update Profile with name and photo
                 updateProfile(auth.currentUser, {
                     displayName: userData.fullName,
                     photoURL: userData.profilePic
                 })
+                // Send userinfo to Users collection
                 setDoc(doc(db, "users", userInfo.user.uid), {
                     id: userInfo.user.uid,
                     displayName: userData.fullName,
-                    photoURL: userData.profilePic,
+                    photoURL: userData?.profilePic ? userData.profilePic : '',
                     date: Date.now()
                 })
                 //Send user to redux store
@@ -59,7 +63,7 @@ function Signup() {
                 console.log(error);
                 console.log(error.code);
                 if (error.code == 'auth/email-already-in-use') {
-                    toast.error('Already an user with this email.', { theme: 'colored' })
+                    toast.error('Already an user with this email. Please Sign in', { theme: 'colored' })
                 } else if (error.code == 'auth/weak-password') {
                     toast.error('The Password is too weak.', { theme: 'colored' })
                 } else if (error.code == 'auth/invalid-email') {
