@@ -1,7 +1,9 @@
-import { collection, getDocs, query, where } from 'firebase/firestore'
-import React, { useState } from 'react'
+import { collection, doc, getDoc, getDocs, onSnapshot, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
 import { FaRocketchat, FaSearch } from 'react-icons/fa'
 import { MdSettings, MdSearh } from 'react-icons/md'
+import { useSelector } from 'react-redux'
+import { selectUser } from '../../features/userSlice'
 import { db } from '../../Firebase'
 import ChatUser from './ChatUser'
 
@@ -33,8 +35,8 @@ function Search({ setSearchResult, setSearchLoading, userSearch, setUserSearch }
 
     const handleEnter = (e) => {
         e.code === 'Enter' &&
-            setSearchLoading(true); 
-            handleSearch();
+            setSearchLoading(true);
+        handleSearch();
     }
 
     return (
@@ -43,6 +45,7 @@ function Search({ setSearchResult, setSearchLoading, userSearch, setUserSearch }
                 type="text"
                 className='w-full p-1 focus:outline-none'
                 onKeyDown={handleEnter}
+                value={userSearch}
                 placeholder='Search..'
                 onChange={(e) => setUserSearch(e.target.value)}
             />
@@ -55,7 +58,80 @@ export default function Sidebar() {
     const [isSearching, setIsSearching] = useState(false);
     const [searchResult, setSearchResult] = useState({});
     const [searchLoading, setSearchLoading] = useState(false);
-    console.log(searchResult);
+    const currentUser = useSelector(selectUser);
+    const [chats, setChats] = useState([]);
+    
+    useEffect(() => {
+        const subscribe = () => {
+            onSnapshot(doc(db, "userChats", currentUser.uid), (doc) => {
+                setChats(doc.data());
+                // if (snapshot.size) {
+                //     setChats(snapshot.docs.map((doc) => {
+                //         return {
+                //             ...doc.data()
+                //         }
+                //     }))
+                // } else {
+                //     console.log('Nothing in ChatUsers');
+                // }
+            })
+        }
+
+        return () => {
+            subscribe()
+        }
+    }, [currentUser.uid])
+
+    // console.log(Object.entries(chats));
+
+    const handleSelect = async (userId) => {
+        // Whether the group(chat in firestore) exists, if not create new
+        const combinedId = currentUser.uid > userId ? currentUser.uid + userId : userId + currentUser.uid;
+        try {
+            const res = await getDoc(doc(db, "chats", combinedId));
+            if (!res.exists()) {
+                // Create a chat in chats collection
+                await setDoc(doc(db, "chats", combinedId), {
+                    messages: []
+                })
+                // Update user Chats for currentUser
+                await updateDoc(doc(db, "userChats", currentUser.uid), {
+                    [combinedId + ".userInfo"]: {
+                        uid: userId,
+                        displayName: searchResult?.displayName,
+                        photoURL: searchResult?.photoURL
+                    },
+                    [combinedId + ".date"]: serverTimestamp()
+                })
+
+                // Update user Chats for Opposite User
+                await updateDoc(doc(db, "userChats", userId), {
+                    [combinedId + ".userInfo"]: {
+                        uid: currentUser.uid,
+                        displayName: currentUser.displayName,
+                        photoURL: currentUser.photoURL
+                    },
+                    [combinedId + ".date"]: serverTimestamp()
+                })
+
+                /* 
+                Schema:
+                -------
+                userChats: {
+                    Samuchas Id: {
+                        userInfo: {},
+                        lastMessage: {},
+                        time: creating time
+                    }
+                } 
+                */
+            }
+        } catch (error) {
+            console.log(error);
+        }
+        setUserSearch('');
+        setSearchResult({});
+    }
 
     return (
         <div className='col-span-4'>
@@ -83,14 +159,15 @@ export default function Sidebar() {
                 />}
             {userSearch ?
                 searchResult?.displayName ? <div className='h-[75%] border border-white'>
-                    <button className='w-full'>
+                    <button className='w-full' onClick={() => handleSelect(searchResult?.id)}>
                         <ChatUser image={searchResult?.photoURL} name={searchResult?.displayName} />
                     </button>
                 </div> : "Search Loading" :
                 <div className='h-[75%] overflow-y-auto border border-white'>
-                    {chatUsers?.map(({ image, name, lastMessage, lastMessageTime, id }) => (
+                    {chats && Object.entries(chats)?.map((chat) => (
+                        // <h1>{chat[0]}</h1>
                         <button className='w-full'>
-                            <ChatUser key={id} image={image} name={name} lastMessage={lastMessage} lastMessageTime={lastMessageTime} />
+                            <ChatUser key={chat[0]} image={chat[1].userInfo.photoURL} name={chat[1].userInfo.displayName} />
                         </button>
                     ))}
                 </div>}
