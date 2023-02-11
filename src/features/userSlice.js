@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   user: null,
   chatUser: null,
-  chatId: {}
+  chatId: null
 };
 
 export const userSlice = createSlice({
@@ -20,15 +20,19 @@ export const userSlice = createSlice({
     },
     logout: (state) => {
       state.user = null;
+      state.chatUser = null;
+      state.chatId = null;
     },
-    changeUser: (state, action) => {
+    changeActiveUser: (state, action) => {
       state.chatUser = action.payload;
-      state.chatId = state.user.uid > action.payload.uid ? state.user.uid + action.payload.uid : action.payload.uid + state.user.uid;
+    },
+    changeChatId: (state, action) => {
+      state.chatId = action.payload;
     }
   },
 });
 
-export const { login, logout, changeUser } = userSlice.actions;
+export const { login, logout, changeActiveUser, changeChatId } = userSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of

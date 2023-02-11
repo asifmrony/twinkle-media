@@ -2,12 +2,94 @@ import { Link } from 'react-router-dom'
 import { BsThreeDots, BsEmojiSmile } from 'react-icons/bs'
 import { MdAttachFile } from 'react-icons/md'
 import { FaPaperPlane } from 'react-icons/fa'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { selectChatId, selectChatUser, selectUser } from '../../features/userSlice'
+import { arrayUnion, doc, onSnapshot, Timestamp, updateDoc } from 'firebase/firestore'
+import { db, storage } from '../../Firebase'
+import { uuidv4 } from '@firebase/util'
+import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
+import { toast } from 'react-toastify'
 
 export default function Main() {
     const fileAttachmentRef = useRef(null);
-    const handleAttachmentUpload = (e) => {
-        console.log(e.target.files[0]);
+    const currentUser = useSelector(selectUser);
+    const activeChatUser = useSelector(selectChatUser);
+    const activeChatId = useSelector(selectChatId);
+    const [messages, setMessages] = useState([]);
+    const [input, setInput] = useState('');
+    const [image, setImage] = useState();
+    const id = uuidv4();
+
+    useEffect(() => {
+        const unsub = () => {
+            onSnapshot(doc(db, "chats", activeChatId), (doc) => {
+                doc.exists() && setMessages(doc.data().messages);
+            })
+        }
+
+        return () => {
+            unsub();
+        }
+    }, [])
+
+    console.log(messages);
+    console.log(image);
+
+    const handleSend = async () => {
+        if (image) {
+            const storageRef = ref(storage, `chat-images/${image.name}`)
+            const uploadTask = uploadBytesResumable(storageRef, image);
+
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    // Observe state change events such as progress, pause, and resume
+                    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                    switch (snapshot.state) {
+                        case 'paused':
+                            console.log('Upload is paused');
+                            break;
+                        case 'running':
+                            console.log('Upload is running');
+                            break;
+                    }
+                },
+                (error) => {
+                    // Handle unsuccessful uploads
+                    toast.error('Error Sending image, Try Again!', { theme: "colored" });
+                },
+                () => {
+                    // Handle successful uploads on complete
+                    // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+                    getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+                        console.log('File available at', downloadURL);
+                        await updateDoc(doc(db, "chats", activeChatId), {
+                            messages: arrayUnion({
+                                id: id,
+                                text: input,
+                                senderId: currentUser.uid,
+                                date: Timestamp.now(),
+                                image: downloadURL
+                            })
+                        })
+                    });
+                    setInput('');
+                    setImage();
+                    toast.success("Profile Photo Uploaded.", { theme: "colored" })
+                }
+            );
+        } else {
+            await updateDoc(doc(db, "chats", activeChatId), {
+                messages: arrayUnion({
+                    id: id,
+                    text: input,
+                    senderId: currentUser.uid,
+                    date: Timestamp.now()
+                })
+            })
+        }
     }
 
     return (
@@ -17,24 +99,49 @@ export default function Main() {
                 <div className='flex gap-x-1 items-center'>
                     <div className='w-[53px] h-[53px] bg-white rounded-full p-[2px] mr-3'>
                         <Link to={`/profile`} className="post-insider-link">
-                            <img src={'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
+                            <img src={activeChatUser.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
                         </Link>
                     </div>
                     <div>
-                        <h1 className='font-semibold'>Emma Watson</h1>
-                        <p className='text-sm font-light'>+8801793726776</p>
+                        <h1 className='font-semibold'>{activeChatUser.displayName}</h1>
+                        {/* <p className='text-sm font-light'>+8801793726776</p> */}
                     </div>
                 </div>
                 <BsThreeDots className='h-6 w-6 text-slate-600' />
             </div>
             {/* All Messages */}
             <div className='h-[75%] px-5 py-3 overflow-y-auto'>
-                <div className="left-side space-y-1 w-[50%] mr-auto mb-4">
-                    <div>
-                        <p className='text-[#4E4E4E] text-xs mb-1 ml-1'>8:30 AM</p>
-                        <p className='p-2 bg-white rounded-lg rounded-tl-none inline-block text-sm'>whats up, man?</p>
-                    </div>
-                    <div>
+                {messages?.map((msg) => (
+                    msg.senderId === currentUser.uid ?
+                        <div className="left-side space-y-1 w-[50%] mr-auto mb-4">
+                            <div key={msg.id}>
+                                <p className='text-[#4E4E4E] text-xs mb-1 ml-1'>8:30 AM</p>
+                                <p className='p-2 bg-white rounded-lg rounded-tl-none inline-block text-sm'>{msg.text}</p>
+                            </div>
+                        </div>
+                        : <div className="right-side space-y-1 w-[50%] ml-auto">
+                            <div className='text-right'>
+                                <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:30 AM</p>
+                                <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
+                                    Hi man, Whats going on ?
+                                </p>
+                            </div>
+                            <div className='text-right'>
+                                <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:50 AM</p>
+                                <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
+                                    Can you help me with the situation
+                                </p>
+                            </div>
+                            <div className='text-right'>
+                                <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:50 AM</p>
+                                <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
+                                    Anything else do you need from me that i am aware to okay and think about in a bit more details
+                                </p>
+                            </div>
+
+                        </div>
+                ))}
+                {/* <div>
                         <p className='p-2 bg-white rounded-lg rounded-tl-none inline-block text-sm'>
                             I am not that much good, recent time its very hard
                             time going on
@@ -45,8 +152,7 @@ export default function Main() {
                             Lets see, How I can manage the situation right here
                             on board
                         </p>
-                    </div>
-                </div>
+                    </div> */}
                 <div className="right-side space-y-1 w-[50%] ml-auto">
                     <div className='text-right'>
                         <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:30 AM</p>
@@ -54,27 +160,20 @@ export default function Main() {
                             Hi man, Whats going on ?
                         </p>
                     </div>
-                    <div className='text-right'>
-                        <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:50 AM</p>
-                        <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
-                        Can you help me with the situation
-                        </p>
-                    </div>
-                    <div className='text-right'>
-                        <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:50 AM</p>
-                        <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
-                            Anything else do you need from me that i am aware to okay and think about in a bit more details
-                        </p>
-                    </div>
-                    
                 </div>
+
             </div>
             {/* Message Type and Send */}
             <div className="bg-white py-3 px-4">
                 <div className="relative">
-                    <input type="text" className='w-full py-3 pl-12 pr-24 rounded-full bg-[#fafbfd] outline-[#d8dcf1]' placeholder='Type your messages here' />
+                    <input
+                        type="text"
+                        className='w-full py-3 pl-12 pr-24 rounded-full bg-[#fafbfd] outline-[#d8dcf1]'
+                        placeholder='Type your messages here'
+                        onChange={(e) => setInput(e.target.value)}
+                    />
                     <BsEmojiSmile className='absolute top-3.5 left-4 w-5 h-5 text-slate-500' />
-                    <input type="file" accept="image/*" className="hidden" ref={fileAttachmentRef} name="fileInput" id="profilePicButton" onChange={handleAttachmentUpload} />
+                    <input type="file" accept="image/*" className="hidden" ref={fileAttachmentRef} name="fileInput" id="profilePicButton" onChange={(e) => setImage(e.target.files[0])} />
                     <label htmlFor="profilePicButton">
                         <button type="button"
                             className="p-2 hover:bg-gray-200 rounded-full absolute right-14 top-1.5"
@@ -84,7 +183,7 @@ export default function Main() {
                         </button>
                     </label>
 
-                    <button className='w-12 h-12 rounded-full bg-[#1C57FF] text-white flex justify-center items-center absolute top-0 right-0'>
+                    <button onClick={handleSend} className='w-12 h-12 rounded-full bg-[#1C57FF] text-white flex justify-center items-center absolute top-0 right-0'>
                         <FaPaperPlane />
                     </button>
                 </div>

@@ -2,8 +2,8 @@ import { collection, doc, getDoc, getDocs, onSnapshot, query, serverTimestamp, s
 import React, { useEffect, useState } from 'react'
 import { FaRocketchat, FaSearch } from 'react-icons/fa'
 import { MdSettings, MdSearh } from 'react-icons/md'
-import { useSelector } from 'react-redux'
-import { selectUser } from '../../features/userSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { changeActiveUser, changeChatId, selectUser } from '../../features/userSlice'
 import { db } from '../../Firebase'
 import ChatUser from './ChatUser'
 
@@ -60,20 +60,12 @@ export default function Sidebar() {
     const [searchLoading, setSearchLoading] = useState(false);
     const currentUser = useSelector(selectUser);
     const [chats, setChats] = useState([]);
+    const dispatch = useDispatch();
     
     useEffect(() => {
         const subscribe = () => {
             onSnapshot(doc(db, "userChats", currentUser.uid), (doc) => {
                 setChats(doc.data());
-                // if (snapshot.size) {
-                //     setChats(snapshot.docs.map((doc) => {
-                //         return {
-                //             ...doc.data()
-                //         }
-                //     }))
-                // } else {
-                //     console.log('Nothing in ChatUsers');
-                // }
             })
         }
 
@@ -82,8 +74,24 @@ export default function Sidebar() {
         }
     }, [currentUser.uid])
 
-    // console.log(Object.entries(chats));
+    /**
+     * Send Active Chatuser and combinedId to redux store.
+     */
+    const handleActiveChat = (userid, displayName, photoURL) => {
+        dispatch(changeActiveUser({
+           uid: userid,
+           displayName: displayName,
+           photoURL: photoURL
+        }));
+        const combinedId = currentUser.uid > userid ? currentUser.uid + userid : userid + currentUser.uid;
+        dispatch(changeChatId(combinedId));
+    }
 
+    /**
+     * Create Chat Settings such as 
+        - Create new doc with combinedId in "Chats" collection
+        - update recent chat list in sidebar
+     */
     const handleSelect = async (userId) => {
         // Whether the group(chat in firestore) exists, if not create new
         const combinedId = currentUser.uid > userId ? currentUser.uid + userId : userId + currentUser.uid;
@@ -159,17 +167,26 @@ export default function Sidebar() {
                 />}
             {userSearch ?
                 searchResult?.displayName ? <div className='h-[75%] border border-white'>
-                    <button className='w-full' onClick={() => handleSelect(searchResult?.id)}>
-                        <ChatUser image={searchResult?.photoURL} name={searchResult?.displayName} />
+                    <button 
+                        className='w-full' 
+                        onClick={() => {
+                            handleSelect(searchResult?.id);
+                            handleActiveChat(searchResult.id, searchResult.displayName, searchResult.photoURL)
+                        }}
+                    >
+                            <ChatUser image={searchResult?.photoURL} name={searchResult?.displayName} />
                     </button>
                 </div> : "Search Loading" :
                 <div className='h-[75%] overflow-y-auto border border-white'>
-                    {chats && Object.entries(chats)?.map((chat) => (
-                        // <h1>{chat[0]}</h1>
-                        <button className='w-full'>
-                            <ChatUser key={chat[0]} image={chat[1].userInfo.photoURL} name={chat[1].userInfo.displayName} />
-                        </button>
-                    ))}
+                    {chats && Object.entries(chats)?.map((chat) => {
+                        const [chatId, { userInfo: {displayName, photoURL, uid} }] = chat;
+                        return (
+                            // <h1>{chat[0]}</h1>
+                            <button className='w-full' onClick={() => handleActiveChat(uid, displayName, photoURL)}>
+                                <ChatUser key={chatId} image={photoURL} name={displayName} />
+                            </button>
+                        )
+                    })}
                 </div>}
         </div>
     )
