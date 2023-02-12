@@ -29,12 +29,11 @@ export default function Main() {
         }
 
         return () => {
-            unsub();
+            activeChatId && unsub();
         }
-    }, [])
+    }, [activeChatId])
 
     console.log(messages);
-    console.log(image);
 
     const handleSend = async () => {
         if (image) {
@@ -75,9 +74,7 @@ export default function Main() {
                             })
                         })
                     });
-                    setInput('');
-                    setImage();
-                    toast.success("Profile Photo Uploaded.", { theme: "colored" })
+                    toast.success("Image Sent", { theme: "colored" })
                 }
             );
         } else {
@@ -89,6 +86,7 @@ export default function Main() {
                     date: Timestamp.now()
                 })
             })
+            setInput('');
         }
     }
 
@@ -99,11 +97,11 @@ export default function Main() {
                 <div className='flex gap-x-1 items-center'>
                     <div className='w-[53px] h-[53px] bg-white rounded-full p-[2px] mr-3'>
                         <Link to={`/profile`} className="post-insider-link">
-                            <img src={activeChatUser.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
+                            <img src={activeChatUser?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
                         </Link>
                     </div>
                     <div>
-                        <h1 className='font-semibold'>{activeChatUser.displayName}</h1>
+                        <h1 className='font-semibold'>{activeChatUser?.displayName}</h1>
                         {/* <p className='text-sm font-light'>+8801793726776</p> */}
                     </div>
                 </div>
@@ -113,32 +111,32 @@ export default function Main() {
             <div className='h-[75%] px-5 py-3 overflow-y-auto'>
                 {messages?.map((msg) => (
                     msg.senderId === currentUser.uid ?
-                        <div className="left-side space-y-1 w-[50%] mr-auto mb-4">
-                            <div key={msg.id}>
-                                <p className='text-[#4E4E4E] text-xs mb-1 ml-1'>8:30 AM</p>
-                                <p className='p-2 bg-white rounded-lg rounded-tl-none inline-block text-sm'>{msg.text}</p>
-                            </div>
+                        <div className="right-side space-y-1 w-[50%] ml-auto" key={msg.id}>
+                            {msg.image ?
+                                <div key={msg.id}>
+                                    <img src={msg.image} alt="Message containing images" />
+                                </div>
+                                :
+                                <div className='text-right'>
+                                    <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:30 AM</p>
+                                    <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
+                                        {msg.text}
+                                    </p>
+                                </div>
+                            }
                         </div>
-                        : <div className="right-side space-y-1 w-[50%] ml-auto">
-                            <div className='text-right'>
-                                <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:30 AM</p>
-                                <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
-                                    Hi man, Whats going on ?
-                                </p>
-                            </div>
-                            <div className='text-right'>
-                                <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:50 AM</p>
-                                <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
-                                    Can you help me with the situation
-                                </p>
-                            </div>
-                            <div className='text-right'>
-                                <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:50 AM</p>
-                                <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
-                                    Anything else do you need from me that i am aware to okay and think about in a bit more details
-                                </p>
-                            </div>
-
+                        :
+                        <div className="left-side space-y-1 w-[50%] mr-auto mb-4" key={msg.id}>
+                            {msg.image ?
+                                <div key={msg.id}>
+                                    <img className='h-40' src={msg.image} alt="Message containing images" />
+                                </div>
+                                :
+                                <div>
+                                    <p className='text-[#4E4E4E] text-xs mb-1 ml-1'>8:30 AM</p>
+                                    <p className='p-2 bg-white rounded-lg rounded-tl-none inline-block text-sm'>{msg.text}</p>
+                                </div>
+                            }
                         </div>
                 ))}
                 {/* <div>
@@ -153,14 +151,14 @@ export default function Main() {
                             on board
                         </p>
                     </div> */}
-                <div className="right-side space-y-1 w-[50%] ml-auto">
+                {/* <div className="right-side space-y-1 w-[50%] ml-auto">
                     <div className='text-right'>
                         <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:30 AM</p>
                         <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
                             Hi man, Whats going on ?
                         </p>
                     </div>
-                </div>
+                </div> */}
 
             </div>
             {/* Message Type and Send */}
