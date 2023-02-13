@@ -10,6 +10,7 @@ import { db, storage } from '../../Firebase'
 import { uuidv4 } from '@firebase/util'
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
 import { toast } from 'react-toastify'
+import { useChatScroll } from '../../hooks/scrollToBottom'
 
 export default function Main() {
     const fileAttachmentRef = useRef(null);
@@ -18,24 +19,32 @@ export default function Main() {
     const activeChatId = useSelector(selectChatId);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
-    const [image, setImage] = useState();
+    const [image, setImage] = useState(null);
     const id = uuidv4();
+    const scrollToBottom = useChatScroll(messages);
+
+    console.log(activeChatId);
 
     useEffect(() => {
         const unsub = () => {
             onSnapshot(doc(db, "chats", activeChatId), (doc) => {
                 doc.exists() && setMessages(doc.data().messages);
             })
+            console.log("Active id on effect", activeChatId)
         }
 
         return () => {
-            activeChatId && unsub();
+            unsub();
         }
     }, [activeChatId])
 
     console.log(messages);
 
     const handleSend = async () => {
+        if(!input) {
+            alert('Write something in the message box');
+            return;
+        }
         if (image) {
             const storageRef = ref(storage, `chat-images/${image.name}`)
             const uploadTask = uploadBytesResumable(storageRef, image);
@@ -75,6 +84,8 @@ export default function Main() {
                         })
                     });
                     toast.success("Image Sent", { theme: "colored" })
+                    setInput('');
+                    setImage(null);
                 }
             );
         } else {
@@ -108,13 +119,13 @@ export default function Main() {
                 <BsThreeDots className='h-6 w-6 text-slate-600' />
             </div>
             {/* All Messages */}
-            <div className='h-[75%] px-5 py-3 overflow-y-auto'>
+            <div className='h-[75%] px-5 py-3 overflow-y-auto' ref={scrollToBottom}>
                 {messages?.map((msg) => (
                     msg.senderId === currentUser.uid ?
                         <div className="right-side space-y-1 w-[50%] ml-auto" key={msg.id}>
                             {msg.image ?
                                 <div key={msg.id}>
-                                    <img src={msg.image} alt="Message containing images" />
+                                    <img src={msg.image} className='max-h-40 ml-auto' alt="Message containing images" />
                                 </div>
                                 :
                                 <div className='text-right'>
@@ -129,7 +140,7 @@ export default function Main() {
                         <div className="left-side space-y-1 w-[50%] mr-auto mb-4" key={msg.id}>
                             {msg.image ?
                                 <div key={msg.id}>
-                                    <img className='h-40' src={msg.image} alt="Message containing images" />
+                                    <img className='max-h-40 mr-auto' src={msg.image} alt="Message containing images" />
                                 </div>
                                 :
                                 <div>
@@ -168,6 +179,7 @@ export default function Main() {
                         type="text"
                         className='w-full py-3 pl-12 pr-24 rounded-full bg-[#fafbfd] outline-[#d8dcf1]'
                         placeholder='Type your messages here'
+                        value={input}
                         onChange={(e) => setInput(e.target.value)}
                     />
                     <BsEmojiSmile className='absolute top-3.5 left-4 w-5 h-5 text-slate-500' />

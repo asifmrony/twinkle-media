@@ -176,7 +176,8 @@ export default function Sidebar() {
                     >
                             <ChatUser image={searchResult?.photoURL} name={searchResult?.displayName} />
                     </button>
-                </div> : "Search Loading" :
+                </div> : "Search Loading" 
+                :
                 <div className='h-[75%] overflow-y-auto border border-white'>
                     {chats && Object.entries(chats)?.map((chat) => {
                         const [chatId, { userInfo: {displayName, photoURL, uid} }] = chat;
