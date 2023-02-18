@@ -69,6 +69,7 @@ const Header = () => {
                             </li> */}
                             {navLinks.map(link => (
                                 <HeaderOptions 
+                                    key={link.label}
                                     isMenuActive={isMenuActive} 
                                     setIsMenuActive={setIsMenuActive}
                                     Icon={link.icon}
@@ -113,7 +114,7 @@ const Header = () => {
                                             <div className="px-1 py-1">
                                                 <h2 className='font-semibold px-2 pb-1 text-black'>Account</h2>
                                                 {profileDropdownLinks.map(link => (
-                                                    <Menu.Item>
+                                                    <Menu.Item key={link.label}>
                                                         {({ active }) => (
                                                             <a href={link.href}
                                                                 className={`${active ? 'bg-violet-500 text-white' : 'text-gray-900'

@@ -2,46 +2,71 @@ import { Link } from 'react-router-dom'
 import { BsThreeDots, BsEmojiSmile } from 'react-icons/bs'
 import { MdAttachFile } from 'react-icons/md'
 import { FaPaperPlane } from 'react-icons/fa'
-import { useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectChatId, selectChatUser, selectUser } from '../../features/userSlice'
-import { arrayUnion, doc, onSnapshot, Timestamp, updateDoc } from 'firebase/firestore'
+import { arrayUnion, doc, getDoc, onSnapshot, serverTimestamp, Timestamp, updateDoc } from 'firebase/firestore'
 import { db, storage } from '../../Firebase'
 import { uuidv4 } from '@firebase/util'
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
 import { toast } from 'react-toastify'
+import Conversations from './Conversations'
 import { useChatScroll } from '../../hooks/scrollToBottom'
+import { ChatContext } from '../../contexts/chatcontext'
 
 export default function Main() {
     const fileAttachmentRef = useRef(null);
     const currentUser = useSelector(selectUser);
-    const activeChatUser = useSelector(selectChatUser);
-    const activeChatId = useSelector(selectChatId);
+    // const activeChatUser = useSelector(selectChatUser);
+    // const data.chatId = useSelector(selectChatId) || "sxcf";
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [image, setImage] = useState(null);
     const id = uuidv4();
     const scrollToBottom = useChatScroll(messages);
+    const [conversationLoading, setConversationLoading] = useState(false);
+    const { data } = useContext(ChatContext);
 
-    console.log(activeChatId);
+    console.log(data.chatId);
+    console.log(data.chatUser);
 
     useEffect(() => {
         const unsub = () => {
-            onSnapshot(doc(db, "chats", activeChatId), (doc) => {
-                doc.exists() && setMessages(doc.data().messages);
-            })
-            console.log("Active id on effect", activeChatId)
+            try {
+                setConversationLoading(true)
+                onSnapshot(doc(db, "chats", data.chatId), (doc) => {
+                    doc.exists() && setMessages(doc.data().messages);
+                })
+                // const docSnap = await getDoc(doc(db, "chats", data.chatId))
+                // if (docSnap.exists()) {
+                //     console.log("Document data:", docSnap.data());
+                //     setMessages(docSnap.data().messages);
+                //   } else {
+                //     // doc.data() will be undefined in this case
+                //     console.log("No such document!");
+                //   }
+
+            }
+            catch (error) {
+                console.log(error);
+            }
+            finally {
+                setConversationLoading(false)
+            }
+            console.log("entered right here");
         }
+        // console.log("Active id on effect", data.chatId)
 
         return () => {
             unsub();
         }
-    }, [activeChatId])
+    }, [data.chatId])
 
     console.log(messages);
+    console.log(conversationLoading);
 
     const handleSend = async () => {
-        if(!input) {
+        if (!input) {
             alert('Write something in the message box');
             return;
         }
@@ -73,7 +98,7 @@ export default function Main() {
                     // For instance, get the download URL: https://firebasestorage.googleapis.com/...
                     getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
                         console.log('File available at', downloadURL);
-                        await updateDoc(doc(db, "chats", activeChatId), {
+                        await updateDoc(doc(db, "chats", data.chatId), {
                             messages: arrayUnion({
                                 id: id,
                                 text: input,
@@ -84,12 +109,10 @@ export default function Main() {
                         })
                     });
                     toast.success("Image Sent", { theme: "colored" })
-                    setInput('');
-                    setImage(null);
                 }
             );
         } else {
-            await updateDoc(doc(db, "chats", activeChatId), {
+            await updateDoc(doc(db, "chats", data.chatId), {
                 messages: arrayUnion({
                     id: id,
                     text: input,
@@ -97,8 +120,19 @@ export default function Main() {
                     date: Timestamp.now()
                 })
             })
-            setInput('');
         }
+
+        await updateDoc(doc(db, "userChats", currentUser.uid), {
+            [data.chatId + '.lastMessage']: { input },
+            [data.chatId + '.date']: serverTimestamp()
+        })
+        await updateDoc(doc(db, "userChats", data.chatUser.uid), {
+            [data.chatId + '.lastMessage']: { input },
+            [data.chatId + '.date']: serverTimestamp()
+        })
+
+        setInput('');
+        setImage(null);
     }
 
     return (
@@ -108,11 +142,11 @@ export default function Main() {
                 <div className='flex gap-x-1 items-center'>
                     <div className='w-[53px] h-[53px] bg-white rounded-full p-[2px] mr-3'>
                         <Link to={`/profile`} className="post-insider-link">
-                            <img src={activeChatUser?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
+                            <img src={data.chatUser.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
                         </Link>
                     </div>
                     <div>
-                        <h1 className='font-semibold'>{activeChatUser?.displayName}</h1>
+                        <h1 className='font-semibold'>{data.chatUser.displayName}</h1>
                         {/* <p className='text-sm font-light'>+8801793726776</p> */}
                     </div>
                 </div>
@@ -120,57 +154,10 @@ export default function Main() {
             </div>
             {/* All Messages */}
             <div className='h-[75%] px-5 py-3 overflow-y-auto' ref={scrollToBottom}>
-                {messages?.map((msg) => (
-                    msg.senderId === currentUser.uid ?
-                        <div className="right-side space-y-1 w-[50%] ml-auto" key={msg.id}>
-                            {msg.image ?
-                                <div key={msg.id}>
-                                    <img src={msg.image} className='max-h-40 ml-auto' alt="Message containing images" />
-                                </div>
-                                :
-                                <div className='text-right'>
-                                    <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:30 AM</p>
-                                    <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
-                                        {msg.text}
-                                    </p>
-                                </div>
-                            }
-                        </div>
-                        :
-                        <div className="left-side space-y-1 w-[50%] mr-auto mb-4" key={msg.id}>
-                            {msg.image ?
-                                <div key={msg.id}>
-                                    <img className='max-h-40 mr-auto' src={msg.image} alt="Message containing images" />
-                                </div>
-                                :
-                                <div>
-                                    <p className='text-[#4E4E4E] text-xs mb-1 ml-1'>8:30 AM</p>
-                                    <p className='p-2 bg-white rounded-lg rounded-tl-none inline-block text-sm'>{msg.text}</p>
-                                </div>
-                            }
-                        </div>
-                ))}
-                {/* <div>
-                        <p className='p-2 bg-white rounded-lg rounded-tl-none inline-block text-sm'>
-                            I am not that much good, recent time its very hard
-                            time going on
-                        </p>
-                    </div>
-                    <div>
-                        <p className='p-2 bg-white rounded-lg rounded-tl-none inline-block text-sm'>
-                            Lets see, How I can manage the situation right here
-                            on board
-                        </p>
-                    </div> */}
-                {/* <div className="right-side space-y-1 w-[50%] ml-auto">
-                    <div className='text-right'>
-                        <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:30 AM</p>
-                        <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
-                            Hi man, Whats going on ?
-                        </p>
-                    </div>
-                </div> */}
-
+                {!conversationLoading ?
+                    <Conversations messages={messages} />
+                    : <div className='flex h-full justify-center items-center'>Loading</div>
+                }
             </div>
             {/* Message Type and Send */}
             <div className="bg-white py-3 px-4">

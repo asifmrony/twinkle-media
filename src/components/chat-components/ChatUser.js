@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from 'date-fns'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -13,7 +14,10 @@ export default function ChatUser({ id, name, image, lastMessage, lastMessageTime
                 <h1 className='font-medium group-hover:text-white'>{name}</h1>
                 <p className='text-sm text-gray-600 group-hover:text-white'>{lastMessage}</p>
             </div>
-            <p className='text-xs text-gray-400 mt-1 group-hover:text-white'>{lastMessageTime}</p>
+            <p className='text-xs text-gray-400 mt-1 group-hover:text-white'>
+            {/* {lastMessageTime && formatDistanceToNow(lastMessageTime)} ago */}
+            {lastMessageTime}
+            </p>
         </div>
     )
 }

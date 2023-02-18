@@ -1,8 +1,9 @@
 import { collection, doc, getDoc, getDocs, onSnapshot, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { FaRocketchat, FaSearch } from 'react-icons/fa'
 import { MdSettings, MdSearh } from 'react-icons/md'
 import { useDispatch, useSelector } from 'react-redux'
+import { ChatContext } from '../../contexts/chatcontext'
 import { changeActiveUser, changeChatId, selectUser } from '../../features/userSlice'
 import { db } from '../../Firebase'
 import ChatUser from './ChatUser'
@@ -61,7 +62,8 @@ export default function Sidebar() {
     const currentUser = useSelector(selectUser);
     const [chats, setChats] = useState([]);
     const dispatch = useDispatch();
-    
+    const { dispatch: contextDispatch } = useContext(ChatContext);
+
     useEffect(() => {
         const subscribe = () => {
             onSnapshot(doc(db, "userChats", currentUser.uid), (doc) => {
@@ -78,13 +80,21 @@ export default function Sidebar() {
      * Send Active Chatuser and combinedId to redux store.
      */
     const handleActiveChat = (userid, displayName, photoURL) => {
-        dispatch(changeActiveUser({
-           uid: userid,
-           displayName: displayName,
-           photoURL: photoURL
-        }));
-        const combinedId = currentUser.uid > userid ? currentUser.uid + userid : userid + currentUser.uid;
-        dispatch(changeChatId(combinedId));
+        // dispatch(changeActiveUser({
+        //    uid: userid,
+        //    displayName: displayName,
+        //    photoURL: photoURL
+        // }));
+        contextDispatch({
+            type: "CHANGE_USER",
+            payload: {
+                uid: userid,
+                displayName,
+                photoURL
+            }
+        })
+        // const combinedId = currentUser.uid > userid ? currentUser.uid + userid : userid + currentUser.uid;
+        // dispatch(changeChatId(combinedId));
     }
 
     /**
@@ -167,24 +177,25 @@ export default function Sidebar() {
                 />}
             {userSearch ?
                 searchResult?.displayName ? <div className='h-[75%] border border-white'>
-                    <button 
-                        className='w-full' 
+                    <button
+                        className='w-full'
                         onClick={() => {
                             handleSelect(searchResult?.id);
                             handleActiveChat(searchResult.id, searchResult.displayName, searchResult.photoURL)
                         }}
                     >
-                            <ChatUser image={searchResult?.photoURL} name={searchResult?.displayName} />
+                        <ChatUser image={searchResult?.photoURL} name={searchResult?.displayName} />
                     </button>
-                </div> : "Search Loading" 
+                </div> : "Search Loading"
                 :
                 <div className='h-[75%] overflow-y-auto border border-white'>
                     {chats && Object.entries(chats)?.map((chat) => {
-                        const [chatId, { userInfo: {displayName, photoURL, uid} }] = chat;
+                        const [chatId, {  userInfo: { displayName, photoURL, uid } }] = chat;
+                        console.log(chat)
                         return (
                             // <h1>{chat[0]}</h1>
-                            <button className='w-full' onClick={() => handleActiveChat(uid, displayName, photoURL)}>
-                                <ChatUser key={chatId} image={photoURL} name={displayName} />
+                            <button key={chatId} className='w-full' onClick={() => handleActiveChat(uid, displayName, photoURL)}>
+                                <ChatUser image={photoURL} name={displayName} lastMessageTime={'13minutes'} lastMessage={chat[1]?.lastMessage?.input} />
                             </button>
                         )
                     })}
