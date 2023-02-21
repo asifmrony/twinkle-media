@@ -22,7 +22,7 @@ const Network = () => {
       <section className='container'>
         <div className='py-10'>
           <h1 className='text-slate-500 font-semibold'>All Active Users</h1>
-          <div className="grid grid-cols-12 gap-x-3 mt-3">
+          <div className="grid grid-cols-12 gap-3 mt-3">
             {allUsers?.map(({ id, displayName, designation, photoURL }) => (
               <div className="col-span-3 user-card bg-white rounded-lg border border-slate-200 p-2">
                 <div className="flex space-x-2 items-center">

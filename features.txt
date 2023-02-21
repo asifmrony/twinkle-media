@@ -38,4 +38,4 @@ Features for v2.00 Release [Upcoming]
 1. User can attach the photo, video with posts.
 2. Modal for creating post & Rich text editor for customizing texts for the post.
 3. Post Sharing Feature
-4. Search Feature.
+4. Gloabal Search Feature.
