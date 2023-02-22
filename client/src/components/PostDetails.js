@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom'
+import { SocketContextProvider } from '../contexts/socketContext';
 import { selectUser } from '../features/userSlice';
 import { usePost } from '../hooks/posts';
 import Spinner from '../utils/Spinner';
@@ -11,7 +12,6 @@ import PostShareButtons from './partials/PostShareButtons';
 
 const PostDetails = () => {
     const { id } = useParams();
-    const user = useSelector(selectUser);
     const { notFound } = usePost(id);
 
     if (notFound) return (
@@ -26,14 +26,14 @@ const PostDetails = () => {
     )
 
     return (
-        <>
+        <SocketContextProvider>
             <Header />
             <section className='max-w-[500px] mx-auto mt-3'>
                 <Post postId={id} />
                 <NewComment postId={id} />
                 <CommentList postId={id} />
             </section>
-        </>
+        </SocketContextProvider>
     )
 }
 

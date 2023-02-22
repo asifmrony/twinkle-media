@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from './partials/Header';
 import Feed from './partials/Feed';
 import Sidebar from './partials/Sidebar';
