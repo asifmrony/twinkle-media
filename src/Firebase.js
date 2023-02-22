@@ -5,12 +5,12 @@ import { getStorage } from 'firebase/storage';
 
 // TODO: Replace the following with your app's Firebase project configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyDu-_XY3BHcqu20giNj88eRM4cHbB6-CRc",
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
     authDomain: "amr-linkedin-clone.firebaseapp.com",
     projectId: "amr-linkedin-clone",
     storageBucket: "amr-linkedin-clone.appspot.com",
-    messagingSenderId: "977211653919",
-    appId: "1:977211653919:web:0357e22cf7869cc53ffa2a"
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID
 }
 
 const app = initializeApp(firebaseConfig);

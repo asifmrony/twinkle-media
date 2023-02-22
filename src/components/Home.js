@@ -4,7 +4,6 @@ import Feed from './partials/Feed';
 import Sidebar from './partials/Sidebar';
 import Widgets from './partials/Widgets';
 
-
 function Home() {
     return (
         <>

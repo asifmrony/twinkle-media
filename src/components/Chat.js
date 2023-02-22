@@ -5,9 +5,6 @@ import Sidebar from './chat-components/Sidebar'
 import Header from './partials/Header'
 
 export default function Chat() {
-  const [activeChatUser, setCurrentChatUser] = useState({});
-  const [activeChatId, setCurrentChatId] = useState('');
-
   return (
     <>
       <Header />
