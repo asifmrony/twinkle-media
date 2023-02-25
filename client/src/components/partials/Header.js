@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { BsLinkedin, BsBriefcaseFill } from 'react-icons/bs';
 import { BiSearchAlt2, BiChevronDown } from 'react-icons/bi';
 import { FaHome } from 'react-icons/fa';
@@ -7,16 +7,53 @@ import { RiMessage2Fill } from 'react-icons/ri';
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment } from 'react';
 import HeaderOptions from './HeaderOptions';
-import { logout, selectUser } from '../../features/userSlice';
+import { logout, selectSocket, selectUser } from '../../features/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { auth } from '../../Firebase';
 import { signOut } from 'firebase/auth';
+import { SocketContext } from '../../contexts/socketContext';
 
 
 const Header = () => {
     const [isMenuActive, setIsMenuActive] = useState('Home');
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
+    const socket = useSelector(selectSocket);
+    // const { socket } = useContext(SocketContext);
+    const [notification, setNotification] = useState([]);
+
+    useEffect(() => {
+        socket?.on("getNotification", (data) => {
+            setNotification((prev) => [...prev, data])
+        })
+    }, [socket])
+
+    console.log(notification);
+    const renderNotification = (ntf) => {
+        let typeMessage;
+        if (ntf.type === 0) {
+            typeMessage = 'disliked'
+        } else if (ntf.type === 1) {
+            typeMessage = 'liked'
+        } else if (ntf.type === 2) {
+            typeMessage = 'commented'
+        }
+        return (
+            <Menu.Item key={ntf?.id}>
+                {({ active }) => (
+                    <a href={ntf?.post_link}
+                        className={`${active ? 'bg-violet-500 text-white' : 'text-gray-900'
+                            } group flex w-full items-center rounded-md px-2 py-1 text-sm`}
+                    >
+                        <div className="flex gap-x-2 items-center">
+                            <img src={ntf?.poster_image} alt="" className='h-[2.5rem] w-[2.5rem] rounded-full object-contain' />
+                            <h2><span className='font-semibold mr-1'>{ntf.senderName}</span>{typeMessage} on your post</h2>
+                        </div>
+                    </a>
+                )}
+            </Menu.Item>
+        )
+    }
 
     const navLinks = [
         { label: 'Home', icon: FaHome, href: '/' },
@@ -113,23 +150,11 @@ const Header = () => {
                                         leaveFrom="transform opacity-100 scale-100"
                                         leaveTo="transform opacity-0 scale-95"
                                     >
-                                        <Menu.Items className="absolute -right-9 mt-2 w-[350px] h-[100px] overflow-y-auto origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                        <Menu.Items className="absolute -right-9 mt-2 w-[350px] h-[400px] overflow-y-auto origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                             <div className="px-1 py-1">
-                                                {notifications.map(noti => (
-                                                    <Menu.Item key={noti.id}>
-                                                        {({ active }) => (
-                                                            <a href={noti.post_link}
-                                                                className={`${active ? 'bg-violet-500 text-white' : 'text-gray-900'
-                                                                    } group flex w-full items-center rounded-md px-2 py-1 text-sm`}
-                                                            >
-                                                                <div className="flex gap-x-2 items-center">
-                                                                    <img src={noti.poster_image} alt="" className='h-[2.5rem] w-[2.5rem] rounded-full object-contain' />
-                                                                    <h2><span className='font-semibold mr-1'>{noti.poster_name}</span>{noti.interaction} on your {noti.post_type} ohter things does also</h2>
-                                                                </div>
-                                                            </a>
-                                                        )}
-                                                    </Menu.Item>
-                                                ))}
+                                                {notification.length ? notification.map(noti => (
+                                                    renderNotification(noti)
+                                                )) : <div className='h-[390px] text-slate-400 w-full flex justify-center items-center'>No Notification yet!</div>}
                                             </div>
 
                                         </Menu.Items>

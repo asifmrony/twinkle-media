@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { selectUser } from '../../features/userSlice'
+import { selectSocket, selectUser } from '../../features/userSlice'
+import { usePostAuthor } from '../../hooks/author'
 import { useAddComment } from '../../hooks/comment'
+import { usePost } from '../../hooks/posts'
 
 const NewComment = ({ postId }) => {
     const user = useSelector(selectUser);
@@ -11,6 +13,10 @@ const NewComment = ({ postId }) => {
         userId: user?.uid,
         postId: postId
     })
+    const { post: postDoc, isLoading: postLoading } = usePost(postId);
+    const { likes, userId, message, date } = postDoc;
+    const { postAuthor, authorLoading } = usePostAuthor(userId);
+    const socket = useSelector(selectSocket);
 
     const handleCommentSubmit = (e) => {
         e.preventDefault();
@@ -21,6 +27,11 @@ const NewComment = ({ postId }) => {
         addComment(commentMessage)
         if (commentPosted) {
             setCommentMessage('');
+            socket.emit("sendNotification", {
+                senderName: user.displayName,
+                receiverName: postAuthor?.displayName,
+                type: 2
+            })
         }
     }
 

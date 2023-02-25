@@ -26,14 +26,16 @@ const PostDetails = () => {
     )
 
     return (
-        <SocketContextProvider>
+        // <SocketContextProvider>
+        <>
             <Header />
             <section className='max-w-[500px] mx-auto mt-3'>
                 <Post postId={id} />
                 <NewComment postId={id} />
                 <CommentList postId={id} />
             </section>
-        </SocketContextProvider>
+        </>
+        // </SocketContextProvider>
     )
 }
 

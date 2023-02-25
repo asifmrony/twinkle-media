@@ -25,8 +25,19 @@ const getUser = (username) => {
 
 io.on("connection", (socket) => {
     socket.on("newUser", (username) => {
-        addNewUser(username, socket.id)
+        addNewUser(username, socket.id);
+        console.log(onlineUsers);
     })
+
+    socket.on("sendNotification", ({senderName, receiverName, type}) => {
+        const receiver = getUser(receiverName);
+        console.log(receiverName);
+        io.to(receiver?.socketId).emit("getNotification", {
+            senderName,
+            type
+        })
+    })
+
     socket.on("disconnect", () => {
         removeUser(socket.id)
     })

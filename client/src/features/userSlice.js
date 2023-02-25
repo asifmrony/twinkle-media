@@ -1,9 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { io } from "socket.io-client";
 
 const initialState = {
   user: null,
   chatUser: null,
-  chatId: null
+  chatId: null,
+  socket: io("http://localhost:5000")
 };
 
 export const userSlice = createSlice({
@@ -40,5 +42,6 @@ export const { login, logout, changeActiveUser, changeChatId } = userSlice.actio
 export const selectUser = (state) => state.user.user;
 export const selectChatUser = (state) => state.user.chatUser;
 export const selectChatId = (state) => state.user.chatId;
+export const selectSocket = (state) => state.user.socket;
 
 export default userSlice.reducer;

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { Menu, Transition, Dialog } from '@headlessui/react';
 import { toast, ToastContainer } from 'react-toastify';
 import { IoIosWarning } from 'react-icons/io';
@@ -7,11 +7,12 @@ import PostShareButtons from "./PostShareButtons";
 import { formatDistanceToNow } from "date-fns";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { selectUser } from "../../features/userSlice";
+import { selectSocket, selectUser } from "../../features/userSlice";
 import { useDeletePost, useUpdatePost, usePost } from "../../hooks/posts";
 import Spinner from "../../utils/Spinner";
 import { useComments } from '../../hooks/comment'
 import { usePostAuthor } from "../../hooks/author";
+import { SocketContext } from "../../contexts/socketContext";
 
 const Post = ({ postId }) => {
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -29,7 +30,6 @@ const Post = ({ postId }) => {
     const isLiked = likes?.includes(user?.uid);
     const params = useParams();
     const navigate = useNavigate();
-
 
     const openModal = async (id) => {
         setIsEditOpen(true);
