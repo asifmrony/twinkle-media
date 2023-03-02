@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import { login, logout, selectUser } from '../../features/userSlice';
 import { auth } from '../../Firebase';
+import Header from '../partials/Header';
 import useAuth from './useAuth';
 
 function RequireAuth({ children }) {
@@ -14,7 +15,10 @@ function RequireAuth({ children }) {
         return <Navigate to={'/login'} />
     }
 
-    return children;
+    return <>
+        <Header />
+        {children}
+    </>;
 }
 
 export default RequireAuth

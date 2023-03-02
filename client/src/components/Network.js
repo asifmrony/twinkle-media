@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAllUsers } from '../hooks/author'
 import Spinner from '../utils/Spinner';
-import Header from './partials/Header'
 
 const Network = () => {
   const { allUsers, usersLoading, isError } = useAllUsers();
@@ -18,7 +17,6 @@ const Network = () => {
 
   return (
     <>
-      <Header />
       <section className='container'>
         <div className='py-10'>
           <h1 className='text-slate-500 font-semibold'>All Active Users</h1>

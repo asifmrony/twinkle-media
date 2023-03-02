@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { auth } from '../../Firebase';
 import { signOut } from 'firebase/auth';
 import { SocketContext } from '../../contexts/socketContext';
+import { Link, useNavigate } from 'react-router-dom';
 
 
 const Header = () => {
@@ -36,20 +37,20 @@ const Header = () => {
         } else if (ntf.type === 1) {
             typeMessage = 'liked'
         } else if (ntf.type === 2) {
-            typeMessage = 'commented'
+            typeMessage = 'commented on'
         }
         return (
             <Menu.Item key={ntf?.id}>
                 {({ active }) => (
-                    <a href={ntf?.post_link}
+                    <Link to={`post/${ntf.postLink}`}
                         className={`${active ? 'bg-violet-500 text-white' : 'text-gray-900'
                             } group flex w-full items-center rounded-md px-2 py-1 text-sm`}
                     >
                         <div className="flex gap-x-2 items-center">
-                            <img src={ntf?.poster_image} alt="" className='h-[2.5rem] w-[2.5rem] rounded-full object-contain' />
-                            <h2><span className='font-semibold mr-1'>{ntf.senderName}</span>{typeMessage} on your post</h2>
+                            <img src={ntf.senderPhoto} alt="" className='h-[2.5rem] w-[2.5rem] rounded-full object-contain' />
+                            <h2><span className='font-semibold mr-1'>{ntf.senderName}</span>{typeMessage} your post</h2>
                         </div>
-                    </a>
+                    </Link>
                 )}
             </Menu.Item>
         )
@@ -57,8 +58,8 @@ const Header = () => {
 
     const navLinks = [
         { label: 'Home', icon: FaHome, href: '/' },
-        { label: 'My Network', icon: IoIosPeople, href: 'network' },
-        { label: 'Messaging', icon: RiMessage2Fill, href: 'chat' },
+        { label: 'My Network', icon: IoIosPeople, href: '/network' },
+        { label: 'Messaging', icon: RiMessage2Fill, href: '/chat' },
     ]
 
     const profileDropdownLinks = [
@@ -99,9 +100,9 @@ const Header = () => {
             <header className='header bg-white sticky top-0 z-50'>
                 <div className="container flex justify-between items-center">
                     <div className="header__left flex gap-x-2 items-center">
-                        <a href="/" className='block'>
+                        <Link to={'/'} className='block'>
                             <BsLinkedin className='h-[34px] w-[34px] bg-white text-blue-700' />
-                        </a>
+                        </Link>
                         <div className="header__search relative">
                             <BiSearchAlt2 className='absolute top-2.5 left-2.5' />
                             <input
@@ -161,13 +162,13 @@ const Header = () => {
                                     </Transition>
                                 </Menu>
                             </li>
-                            <li className='nav__link'>
+                            <li className={`${isMenuActive === 'profile' && 'nav__link--active'}`} style={{minHeight: "56px"}}>
                                 <Menu as="div" className="relative inline-block text-left">
                                     <div>
                                         <Menu.Button className='flex flex-col items-center px-3 py-1'>
                                             <img src={user?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='h-6 w-6 object-contain rounded-full' />
                                             <div className='flex items-center'>
-                                                <span className=''>Me</span>
+                                                <span style={{fontSize: "13px"}}>Me</span>
                                                 <BiChevronDown className='h-5 w-5' />
                                             </div>
                                         </Menu.Button>
@@ -183,7 +184,7 @@ const Header = () => {
                                     >
                                         <Menu.Items className="absolute right-0 mt-2 w-[288px] origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                             <div className="px-1 py-1 ">
-                                                <a href="#">
+                                                <Link to={`/profile/${user?.uid}`} onClick={() => setIsMenuActive('profile')}>
                                                     <div className="flex items-center gap-x-2">
                                                         <div>
                                                             <img src={user?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='h-[3.5rem] w-[3.5rem] rounded-full object-contain' />
@@ -193,8 +194,8 @@ const Header = () => {
                                                             <p className='text-[14px]'>Merchandiser at Richcotton Ltd.</p>
                                                         </div>
                                                     </div>
-                                                </a>
-                                                <a href="#" className='text-sm mt-1 block py-[0.2rem] text-center w-full rounded-full text-violet-900 border border-violet-500 font-medium'>View Profile</a>
+                                                </Link>
+                                                <Link to={`/profile/${user?.uid}`} onClick={() => setIsMenuActive('profile')} className='text-sm mt-1 block py-[0.2rem] text-center w-full rounded-full text-violet-900 border border-violet-500 font-medium'>View Profile</Link>
                                             </div>
                                             <div className="px-1 py-1">
                                                 <h2 className='font-semibold px-2 pb-1 text-black'>Account</h2>

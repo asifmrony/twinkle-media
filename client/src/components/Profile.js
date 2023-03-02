@@ -1,8 +1,6 @@
 import { BiEditAlt } from "react-icons/bi"
 import { Link, useParams } from "react-router-dom"
-import Header from "./partials/Header"
 import Widgets from "./partials/Widgets"
-import Feed from "./partials/Feed"
 import { useAuthorPosts, usePostAuthor, useUpdateAuthor } from "../hooks/author"
 import Spinner from "../utils/Spinner"
 import { Fragment, useState, useEffect, useRef } from "react"
@@ -169,7 +167,6 @@ const Profile = () => {
 
   return (
     <section className="profile">
-      <Header />
       <div className="container">
         <div className="grid grid-cols-12 gap-x-4 mt-5">
           <div className="col-span-9">

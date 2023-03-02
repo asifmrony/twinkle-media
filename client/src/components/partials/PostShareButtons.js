@@ -24,9 +24,11 @@ const PostShareButtons = ({ postId, isLiked }) => {
     await toggleLike();
     socket.emit("sendNotification", {
       senderName: user.displayName,
+      senderPhoto: user.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
       receiverName: postAuthor?.displayName,
       // 0 means dislike, 1 means like
-      type: isLiked ? 0 : 1
+      type: isLiked ? 0 : 1,
+      postLink: postId,
     })
   }
 

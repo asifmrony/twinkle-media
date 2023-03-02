@@ -5,7 +5,6 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { auth } from './Firebase';
 import Home from './components/Home';
 import Login from './components/Login';
-import { login, logout, selectUser } from './features/userSlice';
 import RequireAuth from './components/auth/RequireAuth';
 import Signup from './components/Signup';
 import ResetPassword from './components/ResetPassword';
@@ -14,8 +13,18 @@ import PostDetails from './components/PostDetails';
 import Network from './components/Network';
 import Chat from './components/Chat';
 import ErrorPage from './utils/error-page';
+import { selectSocket, selectUser } from './features/userSlice';
+import Header from './components/partials/Header';
 
 function App() {
+  const currentUser = useSelector(selectUser);
+  const socket = useSelector(selectSocket);
+
+  useEffect(() => {
+    if(currentUser) {
+      socket?.emit("newUser", currentUser?.displayName)
+    }
+  }, [socket, currentUser?.displayName])
 
   return (
     <BrowserRouter>
