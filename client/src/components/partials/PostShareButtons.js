@@ -28,7 +28,7 @@ const PostShareButtons = ({ postId, isLiked }) => {
       receiverName: postAuthor?.displayName,
       // 0 means dislike, 1 means like
       type: isLiked ? 0 : 1,
-      postLink: postId,
+      postLink: postId
     })
   }
 

@@ -29,8 +29,11 @@ const NewComment = ({ postId }) => {
             setCommentMessage('');
             socket.emit("sendNotification", {
                 senderName: user.displayName,
+                senderPhoto: user.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
                 receiverName: postAuthor?.displayName,
-                type: 2
+                // 0 means dislike, 1 means like
+                type: 2,
+                postLink: postId
             })
         }
     }
