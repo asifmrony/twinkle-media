@@ -1,10 +1,15 @@
+import { formatDistanceToNow } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/userSlice'
 
 
 export default function Conversations({ messages }) {
     const currentUser = useSelector(selectUser);
-    console.log(messages);
+
+    const formatTime = (date) => {
+        // return formatDistanceToNow(date.toDate()) + ' ago';
+        return date.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    }
 
     return (
         <>
@@ -17,7 +22,7 @@ export default function Conversations({ messages }) {
                             </div>
                             :
                             <div className='text-right'>
-                                <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>8:30 AM</p>
+                                <p className='text-[#4E4E4E] text-xs mb-1 ml-1 text-right'>{formatTime(msg.date)}</p>
                                 <p className='p-2 bg-[#58668F] rounded-br-none text-white rounded-lg inline-block text-sm'>
                                     {msg.text}
                                 </p>
@@ -32,7 +37,7 @@ export default function Conversations({ messages }) {
                             </div>
                             :
                             <div>
-                                <p className='text-[#4E4E4E] text-xs mb-1 ml-1'>8:30 AM</p>
+                                <p className='text-[#4E4E4E] text-xs mb-1 ml-1'>{formatTime(msg.date)}</p>
                                 <p className='p-2 bg-white rounded-lg rounded-tl-none inline-block text-sm'>{msg.text}</p>
                             </div>
                         }

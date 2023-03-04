@@ -17,27 +17,23 @@ import { ChatContext } from '../../contexts/chatcontext'
 export default function Main() {
     const fileAttachmentRef = useRef(null);
     const currentUser = useSelector(selectUser);
-    // const activeChatUser = useSelector(selectChatUser);
-    // const data.chatId = useSelector(selectChatId) || "sxcf";
+    const activeChatUser = useSelector(selectChatUser);
+    const activeChatId = useSelector(selectChatId) || "sxcf";
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [image, setImage] = useState(null);
     const id = uuidv4();
     const scrollToBottom = useChatScroll(messages);
     const [conversationLoading, setConversationLoading] = useState(false);
-    const { data } = useContext(ChatContext);
 
-    console.log(data.chatId);
-    console.log(data.chatUser);
 
     useEffect(() => {
-        const unsub = () => {
             try {
                 setConversationLoading(true)
-                onSnapshot(doc(db, "chats", data.chatId), (doc) => {
+                onSnapshot(doc(db, "chats", activeChatId), (doc) => {
                     doc.exists() && setMessages(doc.data().messages);
                 })
-                // const docSnap = await getDoc(doc(db, "chats", data.chatId))
+                // const docSnap = await getDoc(doc(db, "chats", activeChatId))
                 // if (docSnap.exists()) {
                 //     console.log("Document data:", docSnap.data());
                 //     setMessages(docSnap.data().messages);
@@ -53,14 +49,9 @@ export default function Main() {
             finally {
                 setConversationLoading(false)
             }
-            console.log("entered right here");
-        }
-        // console.log("Active id on effect", data.chatId)
+            console.log("Loading All Messages");
 
-        return () => {
-            unsub();
-        }
-    }, [data.chatId])
+    }, [activeChatId])
 
     console.log(messages);
     console.log(conversationLoading);
@@ -98,7 +89,7 @@ export default function Main() {
                     // For instance, get the download URL: https://firebasestorage.googleapis.com/...
                     getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
                         console.log('File available at', downloadURL);
-                        await updateDoc(doc(db, "chats", data.chatId), {
+                        await updateDoc(doc(db, "chats", activeChatId), {
                             messages: arrayUnion({
                                 id: id,
                                 text: input,
@@ -112,7 +103,7 @@ export default function Main() {
                 }
             );
         } else {
-            await updateDoc(doc(db, "chats", data.chatId), {
+            await updateDoc(doc(db, "chats", activeChatId), {
                 messages: arrayUnion({
                     id: id,
                     text: input,
@@ -123,12 +114,12 @@ export default function Main() {
         }
 
         await updateDoc(doc(db, "userChats", currentUser.uid), {
-            [data.chatId + '.lastMessage']: { input },
-            [data.chatId + '.date']: serverTimestamp()
+            [activeChatId + '.lastMessage']: { input },
+            [activeChatId + '.date']: serverTimestamp()
         })
-        await updateDoc(doc(db, "userChats", data.chatUser.uid), {
-            [data.chatId + '.lastMessage']: { input },
-            [data.chatId + '.date']: serverTimestamp()
+        await updateDoc(doc(db, "userChats", activeChatUser.uid), {
+            [activeChatId + '.lastMessage']: { input },
+            [activeChatId + '.date']: serverTimestamp()
         })
 
         setInput('');
@@ -142,11 +133,11 @@ export default function Main() {
                 <div className='flex gap-x-1 items-center'>
                     <div className='w-[53px] h-[53px] bg-white rounded-full p-[2px] mr-3'>
                         <Link to={`/profile`} className="post-insider-link">
-                            <img src={data.chatUser.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
+                            <img src={activeChatUser?.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />
                         </Link>
                     </div>
                     <div>
-                        <h1 className='font-semibold'>{data.chatUser.displayName}</h1>
+                        <h1 className='font-semibold'>{activeChatUser?.displayName}</h1>
                         {/* <p className='text-sm font-light'>+8801793726776</p> */}
                     </div>
                 </div>

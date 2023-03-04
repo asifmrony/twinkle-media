@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from 'date-fns'
 import { collection, doc, getDoc, getDocs, onSnapshot, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore'
 import React, { useContext, useEffect, useState } from 'react'
 import { FaRocketchat, FaSearch } from 'react-icons/fa'
@@ -62,39 +63,40 @@ export default function Sidebar() {
     const currentUser = useSelector(selectUser);
     const [chats, setChats] = useState([]);
     const dispatch = useDispatch();
-    const { dispatch: contextDispatch } = useContext(ChatContext);
+    // const { dispatch: contextDispatch } = useContext(ChatContext);
 
     useEffect(() => {
-        const subscribe = () => {
+        // const subscribe = () => {
             onSnapshot(doc(db, "userChats", currentUser.uid), (doc) => {
                 setChats(doc.data());
             })
-        }
+            console.log("Loading userChats Snapshot");
+        // }
 
-        return () => {
-            subscribe()
-        }
+        // return () => {
+        //     subscribe()
+        // }
     }, [currentUser.uid])
 
     /**
      * Send Active Chatuser and combinedId to redux store.
      */
     const handleActiveChat = (userid, displayName, photoURL) => {
-        // dispatch(changeActiveUser({
-        //    uid: userid,
-        //    displayName: displayName,
-        //    photoURL: photoURL
-        // }));
-        contextDispatch({
-            type: "CHANGE_USER",
-            payload: {
-                uid: userid,
-                displayName,
-                photoURL
-            }
-        })
-        // const combinedId = currentUser.uid > userid ? currentUser.uid + userid : userid + currentUser.uid;
-        // dispatch(changeChatId(combinedId));
+        dispatch(changeActiveUser({
+           uid: userid,
+           displayName: displayName,
+           photoURL: photoURL
+        }));
+        // contextDispatch({
+        //     type: "CHANGE_USER",
+        //     payload: {
+        //         uid: userid,
+        //         displayName,
+        //         photoURL
+        //     }
+        // })
+        const combinedId = currentUser.uid > userid ? currentUser.uid + userid : userid + currentUser.uid;
+        dispatch(changeChatId(combinedId));
     }
 
     /**
@@ -151,6 +153,16 @@ export default function Sidebar() {
         setSearchResult({});
     }
 
+    function convertTimestamp(timestamp) {
+        let date = timestamp.toDate();
+        let mm = date.getMonth();
+        let dd = date.getDate();
+        let yyyy = date.getFullYear();
+    
+        date = mm + '/' + dd + '/' + yyyy;
+        return date;
+    }
+
     return (
         <div className='col-span-4'>
             <div className='flex justify-between items-center bg-white py-3 px-4 border-b border-gray-100'>
@@ -165,7 +177,7 @@ export default function Sidebar() {
                     >
                         <FaSearch className='h-4 w-4 relative top-[0.09rem] text-slate-500' />
                     </button>
-                    <MdSettings className='h-5 w-5 text-slate-500' />
+                    {/* <MdSettings className='h-5 w-5 text-slate-500' /> */}
                 </div>
             </div>
             {isSearching &&
@@ -190,12 +202,13 @@ export default function Sidebar() {
                 :
                 <div className='h-[75%] overflow-y-auto border border-white'>
                     {chats && Object.entries(chats)?.map((chat) => {
-                        const [chatId, {  userInfo: { displayName, photoURL, uid } }] = chat;
+                        const [chatId, { date, lastMessage: { input },  userInfo: { displayName, photoURL, uid } }] = chat;
                         console.log(chat)
+                        const timeSince = date && formatDistanceToNow(date.toDate());
                         return (
                             // <h1>{chat[0]}</h1>
                             <button key={chatId} className='w-full' onClick={() => handleActiveChat(uid, displayName, photoURL)}>
-                                <ChatUser image={photoURL} name={displayName} lastMessageTime={'13minutes'} lastMessage={chat[1]?.lastMessage?.input} />
+                                <ChatUser image={photoURL} name={displayName} lastMessageTime={timeSince} lastMessage={input} />
                             </button>
                         )
                     })}

@@ -19,15 +19,17 @@ const Header = () => {
     const [isMenuActive, setIsMenuActive] = useState('Home');
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
-    const socket = useSelector(selectSocket);
+    // const socket = useSelector(selectSocket);
     // const { socket } = useContext(SocketContext);
     const [notification, setNotification] = useState([]);
 
-    useEffect(() => {
-        socket?.on("getNotification", (data) => {
-            setNotification((prev) => [...prev, data])
-        })
-    }, [socket])
+    // useEffect(() => {
+    //     if(socket) {
+    //         socket?.on("getNotification", (data) => {
+    //             setNotification((prev) => [...prev, data])
+    //         })
+    //     }
+    // }, [socket])
 
     console.log(notification);
     const renderNotification = (ntf) => {
