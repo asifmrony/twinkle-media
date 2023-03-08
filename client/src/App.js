@@ -18,13 +18,13 @@ import Header from './components/partials/Header';
 
 function App() {
   const currentUser = useSelector(selectUser);
-  // const socket = useSelector(selectSocket);
+  const socket = useSelector(selectSocket);
 
-  // useEffect(() => {
-  //   if(currentUser && socket) {
-  //     socket?.emit("newUser", currentUser?.displayName)
-  //   }
-  // }, [socket, currentUser?.displayName])
+  useEffect(() => {
+    if(currentUser && socket) {
+      socket?.emit("newUser", currentUser?.displayName)
+    }
+  }, [socket, currentUser?.displayName])
 
   return (
     <BrowserRouter>

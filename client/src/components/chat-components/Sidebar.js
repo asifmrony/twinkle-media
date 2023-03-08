@@ -27,11 +27,18 @@ function Search({ setSearchResult, setSearchLoading, userSearch, setUserSearch }
     const handleSearch = async () => {
         // console.log("Something entered");
         const q = query(collection(db, 'users'), where("displayName", "==", userSearch));
-        const querySnapshot = await getDocs(q);
+        // const querySnapshot = await getDocs(q);
         setSearchLoading(false);
-        querySnapshot.forEach((doc) => {
-            // console.log(doc.id, " => ", doc.data());
-            setSearchResult(doc.data());
+        // querySnapshot.forEach((doc) => {
+        //     // console.log(doc.id, " => ", doc.data());
+        //     setSearchResult(doc.data());
+        // })
+        onSnapshot(q, (snapshot) => {
+            if (snapshot.size) {
+                snapshot.docs.map((doc) => {
+                    setSearchResult(doc.data())
+                })
+            }
         })
     }
 
@@ -48,7 +55,7 @@ function Search({ setSearchResult, setSearchLoading, userSearch, setUserSearch }
                 className='w-full p-1 focus:outline-none'
                 onKeyDown={handleEnter}
                 value={userSearch}
-                placeholder='Search..'
+                placeholder='Write full name [Case-Sensitive] & hit Enter'
                 onChange={(e) => setUserSearch(e.target.value)}
             />
         </div>
@@ -63,38 +70,26 @@ export default function Sidebar() {
     const currentUser = useSelector(selectUser);
     const [chats, setChats] = useState([]);
     const dispatch = useDispatch();
+    const [effect, setEffect] = useState(1);
     // const { dispatch: contextDispatch } = useContext(ChatContext);
 
     useEffect(() => {
-        // const subscribe = () => {
-            onSnapshot(doc(db, "userChats", currentUser.uid), (doc) => {
-                setChats(doc.data());
-            })
-            console.log("Loading userChats Snapshot");
-        // }
+        onSnapshot(doc(db, "userChats", currentUser.uid), (doc) => {
+            console.log(effect);
+            setChats(doc.data());
+        })
 
-        // return () => {
-        //     subscribe()
-        // }
-    }, [currentUser.uid])
+    }, [currentUser.uid, effect])
 
     /**
      * Send Active Chatuser and combinedId to redux store.
      */
     const handleActiveChat = (userid, displayName, photoURL) => {
         dispatch(changeActiveUser({
-           uid: userid,
-           displayName: displayName,
-           photoURL: photoURL
+            uid: userid,
+            displayName: displayName,
+            photoURL: photoURL
         }));
-        // contextDispatch({
-        //     type: "CHANGE_USER",
-        //     payload: {
-        //         uid: userid,
-        //         displayName,
-        //         photoURL
-        //     }
-        // })
         const combinedId = currentUser.uid > userid ? currentUser.uid + userid : userid + currentUser.uid;
         dispatch(changeChatId(combinedId));
     }
@@ -151,21 +146,13 @@ export default function Sidebar() {
         }
         setUserSearch('');
         setSearchResult({});
-    }
-
-    function convertTimestamp(timestamp) {
-        let date = timestamp.toDate();
-        let mm = date.getMonth();
-        let dd = date.getDate();
-        let yyyy = date.getFullYear();
-    
-        date = mm + '/' + dd + '/' + yyyy;
-        return date;
+        setIsSearching(!isSearching);
+        setEffect(effect + 1);
     }
 
     return (
-        <div className='col-span-4'>
-            <div className='flex justify-between items-center bg-white py-3 px-4 border-b border-gray-100'>
+        <div className='col-span-4 bg-[#ECF1FF]'>
+            <div className='flex justify-between items-center bg-[#d0d6e4] py-3 px-4 border-b border-gray-100'>
                 <div className='flex-1 flex items-center gap-x-4'>
                     <FaRocketchat className='h-8 w-8 text-blue-600' />
                     <h2 className='font-semibold text-lg'>Chats</h2>
@@ -175,44 +162,48 @@ export default function Sidebar() {
                         type='button'
                         onClick={(e) => setIsSearching(!isSearching)}
                     >
-                        <FaSearch className='h-4 w-4 relative top-[0.09rem] text-slate-500' />
+                        <FaSearch className='h-5 w-5 relative top-[0.09rem] text-slate-500' title='Search a User' />
                     </button>
                     {/* <MdSettings className='h-5 w-5 text-slate-500' /> */}
                 </div>
             </div>
-            {isSearching &&
-                <Search
-                    setSearchResult={setSearchResult}
-                    setSearchLoading={setSearchLoading}
-                    setUserSearch={setUserSearch}
-                    userSearch={userSearch}
-                />}
-            {userSearch ?
-                searchResult?.displayName ? <div className='h-[75%] border border-white'>
-                    <button
-                        className='w-full'
-                        onClick={() => {
-                            handleSelect(searchResult?.id);
-                            handleActiveChat(searchResult.id, searchResult.displayName, searchResult.photoURL)
-                        }}
-                    >
-                        <ChatUser image={searchResult?.photoURL} name={searchResult?.displayName} />
-                    </button>
-                </div> : "Search Loading"
-                :
-                <div className='h-[75%] overflow-y-auto border border-white'>
+            {isSearching ?
+                <>
+                    <Search
+                        setSearchResult={setSearchResult}
+                        setSearchLoading={setSearchLoading}
+                        setUserSearch={setUserSearch}
+                        userSearch={userSearch}
+                    />
+                    {searchResult?.displayName &&
+                        <div className='h-16 w-80 ml-3 rounded-lg mt-2 bg-white shadow-lg'>
+                            <button
+                                className='w-full rounded-lg'
+                                onClick={() => {
+                                    handleSelect(searchResult?.id);
+                                    handleActiveChat(searchResult.id, searchResult.displayName, searchResult.photoURL)
+                                }}
+                            >
+                                <ChatUser image={searchResult?.photoURL} name={searchResult?.displayName} />
+                            </button>
+                        </div>
+                    }
+                </>
+            :
+                <div className='h-[465px] overflow-y-auto border border-white'>
                     {chats && Object.entries(chats)?.map((chat) => {
-                        const [chatId, { date, lastMessage: { input },  userInfo: { displayName, photoURL, uid } }] = chat;
+                        const [chatId, { date, userInfo: { displayName, photoURL, uid } }] = chat;
                         console.log(chat)
                         const timeSince = date && formatDistanceToNow(date.toDate());
                         return (
                             // <h1>{chat[0]}</h1>
                             <button key={chatId} className='w-full' onClick={() => handleActiveChat(uid, displayName, photoURL)}>
-                                <ChatUser image={photoURL} name={displayName} lastMessageTime={timeSince} lastMessage={input} />
+                                <ChatUser image={photoURL} name={displayName} lastMessageTime={timeSince} lastMessage={chat[1].lastMessage?.input} />
                             </button>
                         )
                     })}
-                </div>}
+                </div>
+            }
         </div>
     )
 }

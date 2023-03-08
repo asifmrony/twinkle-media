@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 
 export default function ChatUser({ id, name, image, lastMessage, lastMessageTime }) {
     return (
-        <div className='bg-white py-3 px-4 border-b border-gray-100 w-full flex justify-between hover:bg-blue-600 group'>
+        <div className='bg-white py-3 px-4 border-b border-gray-100 w-full flex justify-between items-center hover:bg-blue-600 group'>
             <div className='w-[50px] h-[50px] bg-white rounded-full p-[2px] mr-3'>
                 <Link to={`/profile/${id}`} className="post-insider-link">
                     <img src={image || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt="" className='w-full h-full rounded-full' />

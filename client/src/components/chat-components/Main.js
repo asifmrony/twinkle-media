@@ -127,7 +127,7 @@ export default function Main() {
     }
 
     return (
-        <div className='col-span-8 bg-[#ECF1FF] border border-white h-[500px]'>
+        <div className='col-span-8 h-[500px]'>
             {/* Message Header */}
             <div className='header flex justify-between items-center bg-white py-3 px-4 pr-6'>
                 <div className='flex gap-x-1 items-center'>
@@ -144,7 +144,7 @@ export default function Main() {
                 <BsThreeDots className='h-6 w-6 text-slate-600' />
             </div>
             {/* All Messages */}
-            <div className='h-[75%] px-5 py-3 overflow-y-auto' ref={scrollToBottom}>
+            <div className='h-[75%] bg-[#ECF1FF] border border-white px-5 py-3 overflow-y-auto' ref={scrollToBottom}>
                 {!conversationLoading ?
                     <Conversations messages={messages} />
                     : <div className='flex h-full justify-center items-center'>Loading</div>
