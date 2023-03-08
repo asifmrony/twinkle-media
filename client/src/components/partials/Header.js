@@ -13,6 +13,7 @@ import { auth } from '../../Firebase';
 import { signOut } from 'firebase/auth';
 import { SocketContext } from '../../contexts/socketContext';
 import { Link, useNavigate } from 'react-router-dom';
+import { usePostAuthor } from '../../hooks/author';
 
 
 const Header = () => {
@@ -20,8 +21,8 @@ const Header = () => {
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
     const socket = useSelector(selectSocket);
-    // const { socket } = useContext(SocketContext);
     const [notification, setNotification] = useState([]);
+    const { postAuthor, authorLoading, errorObj } = usePostAuthor(user.uid);
 
     useEffect(() => {
         if(socket) {
@@ -65,9 +66,7 @@ const Header = () => {
     ]
 
     const profileDropdownLinks = [
-        { href: '/settings-privacy', label: 'Settings & Privacy' },
-        { href: '/help', label: 'Help' },
-        { href: '/language', label: 'Language' },
+        { href: '/settings-privacy', label: 'Settings & Privacy' }
     ]
 
     const notifications = [
@@ -153,11 +152,11 @@ const Header = () => {
                                         leaveFrom="transform opacity-100 scale-100"
                                         leaveTo="transform opacity-0 scale-95"
                                     >
-                                        <Menu.Items className="absolute -right-9 mt-2 w-[350px] h-[400px] overflow-y-auto origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                        <Menu.Items className="absolute -right-9 mt-1 w-[288px] h-[300px] overflow-y-auto origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                             <div className="px-1 py-1">
                                                 {notification.length ? notification.map(noti => (
                                                     renderNotification(noti)
-                                                )) : <div className='h-[390px] text-slate-400 w-full flex justify-center items-center'>No Notification yet!</div>}
+                                                )) : <div className='h-[290px] text-slate-400 w-full flex justify-center items-center'>No Notification yet!</div>}
                                             </div>
 
                                         </Menu.Items>
@@ -193,7 +192,7 @@ const Header = () => {
                                                         </div>
                                                         <div>
                                                             <h2 className='font-semibold'>{user?.displayName}</h2>
-                                                            <p className='text-[14px]'>Merchandiser at Richcotton Ltd.</p>
+                                                            <p className='text-[14px]'>{postAuthor?.designation}</p>
                                                         </div>
                                                     </div>
                                                 </Link>
@@ -213,19 +212,6 @@ const Header = () => {
                                                         )}
                                                     </Menu.Item>
                                                 ))}
-                                            </div>
-                                            <div className="px-1 py-1">
-                                                <h2 className='font-semibold px-2 pb-1 text-black'>Manage</h2>
-                                                <Menu.Item>
-                                                    {({ active }) => (
-                                                        <a href='#'
-                                                            className={`${active ? 'bg-violet-500 text-white' : 'text-gray-900'
-                                                                } group flex w-full items-center rounded-md px-2 py-1 text-sm`}
-                                                        >
-                                                            Posts & Activity
-                                                        </a>
-                                                    )}
-                                                </Menu.Item>
                                             </div>
                                             <div className="px-1 py-1">
                                                 <Menu.Item>

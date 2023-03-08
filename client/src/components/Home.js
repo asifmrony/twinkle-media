@@ -3,7 +3,6 @@ import Header from './partials/Header';
 import Feed from './partials/Feed';
 import Sidebar from './partials/Sidebar';
 import Widgets from './partials/Widgets';
-import { SocketContextProvider } from '../contexts/socketContext';
 
 function Home() {
 

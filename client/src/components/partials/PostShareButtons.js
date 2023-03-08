@@ -55,15 +55,15 @@ const PostShareButtons = ({ postId, isLiked }) => {
 
       >
         <TbArrowAutofitDown className='h-5 w-5 text-slate-500' />
-        <p className='text-sm font-medium text-neutral-500'>Repost</p>
+        <p className='text-sm font-medium text-neutral-500'>Share</p>
       </button>
-      <button
+      {/* <button
         className='flex cursor-pointer items-center space-x-2 py-3 px-1 hover:bg-gray-100 rounded-md post-insider-link'
 
       >
         <HiOutlinePaperAirplane className='h-5 w-5 text-slate-500' />
         <p className='text-sm font-medium text-neutral-500'>Send</p>
-      </button>
+      </button> */}
     </div>
   )
 }
