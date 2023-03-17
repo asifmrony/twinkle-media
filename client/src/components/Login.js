@@ -80,7 +80,7 @@ function Login() {
                             <label htmlFor="pwd" className='space-y-1 block mb-3'>
                                 <p className='text-gray-500 text-sm'>Password</p>
                                 <input
-                                    type="text"
+                                    type="password"
                                     id='pwd'
                                     name='password'
                                     className={`border ${isPasswordEmpty ? 'border-red-600' : 'border-slate-500'} w-full rounded-md py-1 px-2`}
